@@ -1,0 +1,9 @@
+# Eclipse files
+
+.project
+.classpath
+lint.xml
+project.properties
+proguard.cfg
+bin
+gen
