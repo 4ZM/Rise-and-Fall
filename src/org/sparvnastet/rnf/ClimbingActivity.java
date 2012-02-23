@@ -20,13 +20,12 @@
 package org.sparvnastet.rnf;
 
 import android.app.Activity;
-import android.content.Intent;
-import android.content.res.Configuration;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.Menu;
-import android.view.MenuInflater;
 import android.view.MenuItem;
+import android.view.Window;
+import android.view.WindowManager;
 
 /**
  * Main activity of the application.
@@ -34,71 +33,82 @@ import android.view.MenuItem;
  * Handles user input and system events.
  */
 public class ClimbingActivity extends Activity {
-    public static final String LOGTAG = "RnF";
+    private static final String LOGTAG = "RnF";
 
-    /** Activity class overrides */
+    private static final int MENU_PAUSE = 1;
+    private static final int MENU_RESUME = 2;
+    private static final int MENU_START = 3;
+    private static final int MENU_STOP = 4;
+
+    private Game game_;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         Log.i(LOGTAG, "onCreate");
-        setContentView(R.layout.main);
+
+        game_ = new Game(this);
+
+        getWindow().requestFeature(Window.FEATURE_NO_TITLE);
+        getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
+        setContentView(new ClimbView(this, game_.getRenderer(), game_.getInputBroker()));
 
         if (savedInstanceState == null) {
-            ; // no saved instance
+            Log.i(LOGTAG, "sis is null"); // no saved instance
         } else {
-            ; // saved data
+            Log.i(LOGTAG, "sis is not null"); // saved data
         }
-
-        Intent intent = getIntent();
-        resolveIntent(intent);
-    }
-
-    @Override
-    public void onNewIntent(Intent intent) {
-        setIntent(intent);
-        resolveIntent(intent);
-    }
-
-    @Override
-    public void onConfigurationChanged(Configuration newConfig) {
-        super.onConfigurationChanged(newConfig);
     }
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        MenuInflater inflater = getMenuInflater();
-        inflater.inflate(R.menu.menu, menu);
+        super.onCreateOptionsMenu(menu);
+        Log.i(LOGTAG, "onCreateOptionsMenu");
+
+        menu.add(0, MENU_START, 0, R.string.menu_start);
+        menu.add(0, MENU_STOP, 0, R.string.menu_stop);
+        menu.add(0, MENU_PAUSE, 0, R.string.menu_pause);
+        menu.add(0, MENU_RESUME, 0, R.string.menu_resume);
+
         return true;
     }
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
-        case R.id.reset:
-            ; // Do stuff
-            break;
+        case MENU_START:
+            Log.i(LOGTAG, "MENU_START");
+            game_.start();
+            return true;
+        case MENU_STOP:
+            Log.i(LOGTAG, "MENU_STOP");
+
+            return true;
+        case MENU_PAUSE:
+            Log.i(LOGTAG, "MENU_PAUSE");
+
+            return true;
+        case MENU_RESUME:
+            Log.i(LOGTAG, "MENU_RESUME");
+
+            return true;
         }
-        return true;
+
+        return false;
     }
 
     @Override
     public void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
+        Log.i(LOGTAG, "in onSIS");
+        // mGameThread.saveState(outState);
     }
 
     @Override
     public void onPause() {
         super.onPause();
+        Log.i(LOGTAG, "in onPause");
+        // mGameThread.pause();
     }
 
-    @Override
-    public void onResume() {
-        super.onResume();
-    }
-
-    void resolveIntent(Intent intent) {
-        Log.i(LOGTAG, "resolveIntent action=" + intent.getAction());
-        String action = intent.getAction();
-    }
 }
