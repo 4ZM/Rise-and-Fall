@@ -35,10 +35,10 @@ import android.view.WindowManager;
 public class ClimbingActivity extends Activity {
     private static final String LOGTAG = "RnF";
 
-    private static final int MENU_PAUSE = 1;
-    private static final int MENU_RESUME = 2;
-    private static final int MENU_START = 3;
-    private static final int MENU_STOP = 4;
+    private static final int MENU_START = 1;
+    private static final int MENU_PAUSE = 2;
+    private static final int MENU_RESUME = 3;
+    private static final int MENU_CANCEL = 4;
 
     private Game game_;
 
@@ -47,17 +47,11 @@ public class ClimbingActivity extends Activity {
         super.onCreate(savedInstanceState);
         Log.i(LOGTAG, "onCreate");
 
-        game_ = new Game(this);
+        game_ = new Game(this, savedInstanceState);
 
         getWindow().requestFeature(Window.FEATURE_NO_TITLE);
         getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
         setContentView(new ClimbView(this, game_.getRenderer(), game_.getInputBroker()));
-
-        if (savedInstanceState == null) {
-            Log.i(LOGTAG, "sis is null"); // no saved instance
-        } else {
-            Log.i(LOGTAG, "sis is not null"); // saved data
-        }
     }
 
     @Override
@@ -66,7 +60,7 @@ public class ClimbingActivity extends Activity {
         Log.i(LOGTAG, "onCreateOptionsMenu");
 
         menu.add(0, MENU_START, 0, R.string.menu_start);
-        menu.add(0, MENU_STOP, 0, R.string.menu_stop);
+        menu.add(0, MENU_CANCEL, 0, R.string.menu_cancel);
         menu.add(0, MENU_PAUSE, 0, R.string.menu_pause);
         menu.add(0, MENU_RESUME, 0, R.string.menu_resume);
 
@@ -75,25 +69,29 @@ public class ClimbingActivity extends Activity {
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        switch (item.getItemId()) {
-        case MENU_START:
-            Log.i(LOGTAG, "MENU_START");
-            game_.start();
-            return true;
-        case MENU_STOP:
-            Log.i(LOGTAG, "MENU_STOP");
-
-            return true;
-        case MENU_PAUSE:
-            Log.i(LOGTAG, "MENU_PAUSE");
-
-            return true;
-        case MENU_RESUME:
-            Log.i(LOGTAG, "MENU_RESUME");
-
-            return true;
+        try {
+            switch (item.getItemId()) {
+            case MENU_START:
+                Log.i(LOGTAG, "MENU_START");
+                game_.start();
+                return true;
+            case MENU_CANCEL:
+                Log.i(LOGTAG, "MENU_CANCEL");
+                game_.cancel();
+                return true;
+            case MENU_PAUSE:
+                Log.i(LOGTAG, "MENU_PAUSE");
+                game_.pause(true);
+                return true;
+            case MENU_RESUME:
+                Log.i(LOGTAG, "MENU_RESUME");
+                game_.pause(false);
+                return true;
+            }
+        } catch (Exception e) {
+            Log.i(LOGTAG, "Menu game state exception");
+            e.printStackTrace();
         }
-
         return false;
     }
 
@@ -101,14 +99,19 @@ public class ClimbingActivity extends Activity {
     public void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
         Log.i(LOGTAG, "in onSIS");
-        // mGameThread.saveState(outState);
+        game_.save(outState);
     }
 
     @Override
     public void onPause() {
         super.onPause();
         Log.i(LOGTAG, "in onPause");
-        // mGameThread.pause();
+        try {
+            game_.pause(true);
+        } catch (Exception e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
     }
 
 }

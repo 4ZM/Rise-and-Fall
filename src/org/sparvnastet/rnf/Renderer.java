@@ -19,6 +19,7 @@
 
 package org.sparvnastet.rnf;
 
+import android.content.res.Resources;
 import android.graphics.Canvas;
 import android.view.MotionEvent;
 import android.view.SurfaceHolder;
@@ -27,29 +28,29 @@ import android.view.SurfaceHolder;
 interface IRenderer {
     void enableRendering(boolean enable);
 
-    boolean isRendering();
+    boolean isEnabled();
 
     void setSurface(SurfaceHolder holder);
 
     void render(GameState gameState, MotionEvent[] userInput);
 }
 
-class Renderer implements IRenderer {
+abstract class Renderer implements IRenderer {
     private Object lock_ = new Object();
-    private boolean isRendering_ = false;
+    private boolean enabled_ = false;
     private SurfaceHolder surfaceHolder_ = null;
 
     @Override
     public void enableRendering(boolean enable) {
         synchronized (lock_) {
-            isRendering_ = enable;
+            enabled_ = enable;
         }
     }
 
     @Override
-    public boolean isRendering() {
+    public boolean isEnabled() {
         synchronized (lock_) {
-            return isRendering_;
+            return enabled_;
         }
     }
 
@@ -65,12 +66,12 @@ class Renderer implements IRenderer {
     public void render(GameState gameState, MotionEvent[] userInput) {
         Canvas c = null;
         synchronized (lock_) {
-            if (!isRendering_)
+            if (!enabled_)
                 return;
 
             try {
                 c = surfaceHolder_.lockCanvas(null);
-                draw(c);
+                draw(c, gameState, userInput);
             } finally {
                 if (c != null)
                     surfaceHolder_.unlockCanvasAndPost(c);
@@ -78,9 +79,20 @@ class Renderer implements IRenderer {
         }
     }
 
-    private void draw(Canvas canvas) {
+    protected abstract void draw(Canvas canvas, GameState gameState, MotionEvent[] userInput);
+
+}
+
+class ClimbingRenderer extends Renderer {
+    private Resources resources_;
+
+    public ClimbingRenderer(Resources resources) {
+        resources_ = resources;
+    }
+
+    @Override
+    protected void draw(Canvas canvas, GameState gameState, MotionEvent[] userInput) {
         // do some drawing
         canvas.restore();
     }
-
 }

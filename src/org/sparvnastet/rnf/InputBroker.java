@@ -25,7 +25,7 @@ import android.view.MotionEvent;
 
 // Responsible for aggregating user input until it can be handled as a batch 
 interface IInputBroker {
-    void push(MotionEvent motionEvent);
+    void put(MotionEvent motionEvent);
 
     MotionEvent[] takeBundle(); // <- Output event type should be customized?!
 }
@@ -35,7 +35,7 @@ class InputBroker implements IInputBroker {
     private ArrayList<MotionEvent> motionEvents_ = new ArrayList<MotionEvent>();
 
     @Override
-    public void push(MotionEvent motionEvent) {
+    public void put(MotionEvent motionEvent) {
         synchronized (motionEvents_) {
             motionEvents_.add(motionEvent);
         }

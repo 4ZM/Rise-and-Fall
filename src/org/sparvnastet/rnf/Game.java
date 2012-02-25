@@ -19,7 +19,10 @@
 
 package org.sparvnastet.rnf;
 
+import org.sparvnastet.rnf.GameState.State;
+
 import android.content.Context;
+import android.os.Bundle;
 
 // Represents a climbing game. Controls the games life time and owns the game components.
 public class Game {
@@ -29,19 +32,13 @@ public class Game {
     private IPhysicsSimulator physicsSimulator_;
     private IGameThread gameThread_;
 
-    public Game(Context context) {
-        //Resources res = context.getResources();
-
-        gameState_ = new GameState();
+    public Game(Context context, Bundle savedState) {
+        gameState_ = new GameState(savedState);
         inputBroker_ = new InputBroker();
-        renderer_ = new Renderer();
+        renderer_ = new ClimbingRenderer(context.getResources());
         physicsSimulator_ = new PhysicsSimulator();
 
         gameThread_ = new GameThread(physicsSimulator_, renderer_, inputBroker_, gameState_);
-    }
-
-    public void start() {
-        gameThread_.doStart();
     }
 
     public IInputBroker getInputBroker() {
@@ -52,18 +49,23 @@ public class Game {
         return renderer_;
     }
 
-    // public Bundle saveState(Bundle map) {
-    // synchronized (lock_) {
-    // if (map != null) {
-    //
-    // }
-    // }
-    // return map;
-    // }
-    //
-    // public synchronized void restoreState(Bundle savedState) {
-    // synchronized (lock_) {
-    // // setState(STATE_PAUSE);
-    // }
-    // }
+    public void start() throws Exception {
+        gameThread_.doStart();
+    }
+
+    public void pause(boolean pause) throws Exception {
+        // Let ready state remain ready if paused
+        if (pause && gameState_.getState() == State.READY)
+            return;
+
+        gameState_.setState(pause ? State.PAUSED : State.RUNNING);
+    }
+
+    public void cancel() throws Exception {
+        gameState_.setState(State.CANCELLED);
+    }
+
+    public void save(Bundle outState) {
+        gameState_.save(outState);
+    }
 }

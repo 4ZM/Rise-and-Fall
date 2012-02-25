@@ -19,20 +19,42 @@
 
 package org.sparvnastet.rnf;
 
+import android.os.Bundle;
+
 // Represents the state of the game 
 public class GameState {
 
-    private int mode_;
-
-    public static final int STATE_STOPPED = 1;
-    public static final int STATE_PAUSED = 2;
-    public static final int STATE_RUNNING = 3;
-
-    public void setState(int mode) {
-        mode_ = mode;
+    public enum State {
+        READY, RUNNING, PAUSED, CANCELLED, WON, LOST,
     }
 
-    public int getState() {
-        return mode_;
+    private State state_;
+    private String STATE_KEY = "STATE_KEY";
+
+    public GameState(Bundle savedState) {
+        if (savedState == null) {
+            state_ = State.READY;
+        } else {
+            state_ = (State) savedState.getSerializable(STATE_KEY);
+        }
+    }
+
+    public void save(Bundle outState) {
+        outState.putSerializable(STATE_KEY, state_);
+    }
+
+    public void setState(State state) throws Exception {
+        // Assert valid state transitions
+        if ((state_ == State.READY && state != State.RUNNING && state != State.CANCELLED)
+                || (state_ == State.RUNNING && state != State.PAUSED && state != State.CANCELLED && state != State.WON && state != State.LOST)
+                || (state_ == State.PAUSED && state != State.RUNNING && state != State.CANCELLED)
+                || (state_ == State.CANCELLED || state_ == State.LOST || state_ == State.WON))
+            throw new Exception("Invalid state transition");
+
+        state_ = state;
+    }
+
+    public State getState() {
+        return state_;
     }
 }

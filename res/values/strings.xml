@@ -21,7 +21,7 @@ along with RnF.  If not, see <http://www.gnu.org/licenses/>.
 
     <string name="app_name">Rise and Fall</string>
     <string name="menu_start">Start</string>
-    <string name="menu_stop">Stop</string>
+    <string name="menu_cancel">Cancel</string>
     <string name="menu_pause">Pause</string>
     <string name="menu_resume">Resume</string>
 
