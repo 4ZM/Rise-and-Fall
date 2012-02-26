@@ -40,18 +40,10 @@ class ClimbView extends SurfaceView implements SurfaceHolder.Callback {
         super(context);
 
         renderer_ = renderer;
+        inputBroker_ = inputBroker;
 
         // register our interest in hearing about changes to our surface
-        SurfaceHolder holder = getHolder();
-        holder.addCallback(this);
-
-        // // create thread only; it's started in surfaceCreated()
-        // mGameThread = new GameThread(this, holder, context, new Handler() {
-        // @Override
-        // public void handleMessage(Message m) {
-        // ;
-        // }
-        // });
+        getHolder().addCallback(this);
 
         setFocusable(true); // make sure we get key events
     }
