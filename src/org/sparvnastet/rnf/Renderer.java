@@ -21,6 +21,8 @@ package org.sparvnastet.rnf;
 
 import android.content.res.Resources;
 import android.graphics.Canvas;
+import android.graphics.Color;
+import android.graphics.Paint;
 import android.view.MotionEvent;
 import android.view.SurfaceHolder;
 
@@ -71,7 +73,9 @@ abstract class Renderer implements IRenderer {
 
             try {
                 c = surfaceHolder_.lockCanvas(null);
+                c.save();
                 draw(c, gameState, userInput);
+                c.restore();
             } finally {
                 if (c != null)
                     surfaceHolder_.unlockCanvasAndPost(c);
@@ -92,7 +96,12 @@ class ClimbingRenderer extends Renderer {
 
     @Override
     protected void draw(Canvas canvas, GameState gameState, MotionEvent[] userInput) {
-        // do some drawing
-        canvas.restore();
+        canvas.drawColor(Color.BLACK);
+
+        Paint circlePaint = new Paint();
+        circlePaint.setARGB(255, 200, 0, 0);
+        canvas.drawCircle(canvas.getWidth() / 2, canvas.getHeight() / 2, 20, circlePaint);
+        circlePaint.setARGB(255, 0, 0, 0);
+        canvas.drawCircle(canvas.getWidth() / 2, canvas.getHeight() / 2, 16, circlePaint);
     }
 }
