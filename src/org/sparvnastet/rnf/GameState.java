@@ -19,6 +19,7 @@
 
 package org.sparvnastet.rnf;
 
+import android.graphics.Point;
 import android.os.Bundle;
 
 // Represents the state of the game 
@@ -29,18 +30,35 @@ public class GameState {
     }
 
     private State state_;
-    private String STATE_KEY = "STATE_KEY";
+
+    private Point pos_;
+    private boolean isMoving_;
 
     public GameState(Bundle savedState) {
         if (savedState == null) {
-            state_ = State.READY;
+            initialize();
         } else {
-            state_ = (State) savedState.getSerializable(STATE_KEY);
+            restore(savedState);
         }
     }
 
+    private void initialize() {
+        state_ = State.READY;
+        pos_ = new Point();
+        isMoving_ = false;
+    }
+
     public void save(Bundle outState) {
-        outState.putSerializable(STATE_KEY, state_);
+        outState.putSerializable("GameState::state_", state_);
+        outState.putInt("GameState::pos_.x", pos_.x);
+        outState.putInt("GameState::pos_.y", pos_.y);
+        outState.putBoolean("GameState::isMoving_", isMoving_);
+    }
+
+    private void restore(Bundle savedState) {
+        state_ = (State) savedState.getSerializable("GameState::state_");
+        pos_ = new Point(savedState.getInt("GameState::pos_.x"), savedState.getInt("GameState::pos_.y"));
+        isMoving_ = savedState.getBoolean("GameState::isMoving_");
     }
 
     public boolean setState(State state) {
@@ -58,4 +76,26 @@ public class GameState {
     public State getState() {
         return state_;
     }
+
+    public void startMove() {
+        isMoving_ = true;
+    }
+
+    public void stopMove() {
+        isMoving_ = false;
+    }
+
+    public boolean isMoving() {
+        return isMoving_;
+    }
+
+    public void setPos(int x, int y) {
+        pos_.x = x;
+        pos_.y = y;
+    }
+
+    public Point getPos() {
+        return pos_;
+    }
+
 }

@@ -33,7 +33,7 @@ class ClimbView extends SurfaceView implements SurfaceHolder.Callback {
     @Override
     public boolean onTouchEvent(MotionEvent event) {
         inputBroker_.put(event);
-        return false;
+        return true;
     }
 
     public ClimbView(Context context, IRenderer renderer, IInputBroker inputBroker) {

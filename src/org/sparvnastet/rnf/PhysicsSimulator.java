@@ -30,7 +30,30 @@ class PhysicsSimulator implements IPhysicsSimulator {
 
     @Override
     public GameState run(double elapsedTime, GameState currentState, MotionEvent[] userInput) {
-        // Nothing happens simulation
+
+        for (MotionEvent event : userInput) {
+            switch (event.getAction()) {
+            case MotionEvent.ACTION_DOWN: {
+                currentState.startMove();
+                currentState.setPos((int) event.getX(), (int) event.getY());
+                break;
+            }
+            case MotionEvent.ACTION_MOVE: {
+                currentState.setPos((int) event.getX(), (int) event.getY());
+                break;
+            }
+            case MotionEvent.ACTION_UP: {
+                currentState.setPos((int) event.getX(), (int) event.getY());
+                currentState.stopMove();
+                break;
+            }
+            case MotionEvent.ACTION_CANCEL: {
+                currentState.setPos((int) event.getX(), (int) event.getY());
+                currentState.stopMove();
+                break;
+            }
+            }
+        }
         return currentState;
     }
 

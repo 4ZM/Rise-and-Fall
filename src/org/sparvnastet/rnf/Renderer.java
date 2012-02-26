@@ -23,6 +23,7 @@ import android.content.res.Resources;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
+import android.graphics.Point;
 import android.view.MotionEvent;
 import android.view.SurfaceHolder;
 
@@ -73,6 +74,9 @@ abstract class Renderer implements IRenderer {
 
             try {
                 c = surfaceHolder_.lockCanvas(null);
+                if (c == null)
+                    return;
+
                 c.save();
                 draw(c, gameState, userInput);
                 c.restore();
@@ -99,9 +103,14 @@ class ClimbingRenderer extends Renderer {
         canvas.drawColor(Color.BLACK);
 
         Paint circlePaint = new Paint();
-        circlePaint.setARGB(255, 200, 0, 0);
-        canvas.drawCircle(canvas.getWidth() / 2, canvas.getHeight() / 2, 20, circlePaint);
+        if (gameState.isMoving())
+            circlePaint.setARGB(255, 200, 40, 40);
+        else
+            circlePaint.setARGB(255, 40, 200, 40);
+
+        Point p = gameState.getPos();
+        canvas.drawCircle(p.x, p.y, 20, circlePaint);
         circlePaint.setARGB(255, 0, 0, 0);
-        canvas.drawCircle(canvas.getWidth() / 2, canvas.getHeight() / 2, 16, circlePaint);
+        canvas.drawCircle(p.x, p.y, 16, circlePaint);
     }
 }
