@@ -25,7 +25,7 @@ import android.view.MotionEvent;
 
 interface IGameThread extends Runnable {
 
-    public void doStart() throws Exception;
+    public void doStart();
 
     public void doStop();
 }

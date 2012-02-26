@@ -49,11 +49,15 @@ public class Game {
         return renderer_;
     }
 
-    public void start() throws Exception {
+    public GameState getGameState() {
+        return gameState_;
+    }
+
+    public void start() {
         gameThread_.doStart();
     }
 
-    public void pause(boolean pause) throws Exception {
+    public void pause(boolean pause) {
         // Let ready state remain ready if paused
         if (pause && gameState_.getState() == State.READY)
             return;
@@ -61,7 +65,7 @@ public class Game {
         gameState_.setState(pause ? State.PAUSED : State.RUNNING);
     }
 
-    public void cancel() throws Exception {
+    public void cancel() {
         gameState_.setState(State.CANCELLED);
     }
 

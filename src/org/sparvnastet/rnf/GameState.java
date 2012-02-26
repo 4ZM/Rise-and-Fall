@@ -43,15 +43,16 @@ public class GameState {
         outState.putSerializable(STATE_KEY, state_);
     }
 
-    public void setState(State state) throws Exception {
+    public boolean setState(State state) {
         // Assert valid state transitions
         if ((state_ == State.READY && state != State.RUNNING && state != State.CANCELLED)
                 || (state_ == State.RUNNING && state != State.PAUSED && state != State.CANCELLED && state != State.WON && state != State.LOST)
                 || (state_ == State.PAUSED && state != State.RUNNING && state != State.CANCELLED)
                 || (state_ == State.CANCELLED || state_ == State.LOST || state_ == State.WON))
-            throw new Exception("Invalid state transition");
+            return false;
 
         state_ = state;
+        return true;
     }
 
     public State getState() {

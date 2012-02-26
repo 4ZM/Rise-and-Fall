@@ -69,28 +69,23 @@ public class ClimbingActivity extends Activity {
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        try {
-            switch (item.getItemId()) {
-            case MENU_START:
-                Log.i(LOGTAG, "MENU_START");
-                game_.start();
-                return true;
-            case MENU_CANCEL:
-                Log.i(LOGTAG, "MENU_CANCEL");
-                game_.cancel();
-                return true;
-            case MENU_PAUSE:
-                Log.i(LOGTAG, "MENU_PAUSE");
-                game_.pause(true);
-                return true;
-            case MENU_RESUME:
-                Log.i(LOGTAG, "MENU_RESUME");
-                game_.pause(false);
-                return true;
-            }
-        } catch (Exception e) {
-            Log.i(LOGTAG, "Menu game state exception");
-            e.printStackTrace();
+        switch (item.getItemId()) {
+        case MENU_START:
+            Log.i(LOGTAG, "MENU_START");
+            game_.start();
+            return true;
+        case MENU_CANCEL:
+            Log.i(LOGTAG, "MENU_CANCEL");
+            game_.cancel();
+            return true;
+        case MENU_PAUSE:
+            Log.i(LOGTAG, "MENU_PAUSE");
+            game_.pause(true);
+            return true;
+        case MENU_RESUME:
+            Log.i(LOGTAG, "MENU_RESUME");
+            game_.pause(false);
+            return true;
         }
         return false;
     }
@@ -106,12 +101,11 @@ public class ClimbingActivity extends Activity {
     public void onPause() {
         super.onPause();
         Log.i(LOGTAG, "in onPause");
-        try {
-            game_.pause(true);
-        } catch (Exception e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        }
+        game_.pause(true);
+
     }
 
+    public GameState.State getGameState() {
+        return game_.getGameState().getState();
+    }
 }
