@@ -39,6 +39,10 @@ class PhysicsSimulator implements IPhysicsSimulator {
 
     @Override
     public GameState run(float elapsedTime, GameState currentState, MotionEvent[] userInput) {
+        if (elapsedTime > 0)
+            currentState.setFps(1.0f / elapsedTime);
+        else
+            currentState.setFps(0);
 
         for (MotionEvent event : userInput) {
 
@@ -46,7 +50,7 @@ class PhysicsSimulator implements IPhysicsSimulator {
             case MotionEvent.ACTION_DOWN: {
                 int dx = (int) Math.abs(currentState.getPos().x - event.getX());
                 int dy = (int) Math.abs(currentState.getPos().y - event.getY());
-                if (dx < 20 && dy < 20) {
+                if (dx < 40 && dy < 40) {
                     currentState.startMove();
                     currentState.setPos((int) event.getX(), (int) event.getY());
                 }

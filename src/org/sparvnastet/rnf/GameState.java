@@ -38,6 +38,8 @@ public class GameState {
     private Point pos_;
     private boolean isMoving_;
 
+    private float fps_;
+
     /**
      * Create a new default state or restore a saved state.
      * 
@@ -130,5 +132,13 @@ public class GameState {
 
     public Point getPos() {
         return pos_;
+    }
+
+    public float getFps() {
+        return fps_;
+    }
+
+    public void setFps(float fps) {
+        fps_ = fps;
     }
 }

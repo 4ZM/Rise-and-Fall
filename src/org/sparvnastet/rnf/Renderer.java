@@ -159,5 +159,10 @@ class ClimbingRenderer extends Renderer {
         canvas.drawCircle(p.x, p.y, 20, circlePaint);
         circlePaint.setARGB(255, 0, 0, 0);
         canvas.drawCircle(p.x, p.y, 16, circlePaint);
+
+        // Draw frame rate
+        Paint textPaint = new Paint();
+        textPaint.setARGB(255, 220, 220, 220);
+        canvas.drawText("FPS: " + gameState.getFps(), 10.0f, 10.0f, textPaint);
     }
 }
