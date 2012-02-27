@@ -103,12 +103,17 @@ class ClimbingRenderer extends Renderer {
         canvas.drawColor(Color.BLACK);
 
         Paint circlePaint = new Paint();
-        if (gameState.isMoving())
-            circlePaint.setARGB(255, 200, 40, 40);
-        else
-            circlePaint.setARGB(255, 40, 200, 40);
 
         Point p = gameState.getPos();
+
+        if (gameState.isMoving()) {
+            circlePaint.setARGB(255, 200, 40, 40);
+            canvas.drawCircle(p.x, p.y, 40, circlePaint);
+            circlePaint.setARGB(255, 0, 0, 0);
+            canvas.drawCircle(p.x, p.y, 36, circlePaint);
+        }
+
+        circlePaint.setARGB(255, 200, 40, 40);
         canvas.drawCircle(p.x, p.y, 20, circlePaint);
         circlePaint.setARGB(255, 0, 0, 0);
         canvas.drawCircle(p.x, p.y, 16, circlePaint);

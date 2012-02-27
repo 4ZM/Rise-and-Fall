@@ -32,24 +32,34 @@ class PhysicsSimulator implements IPhysicsSimulator {
     public GameState run(double elapsedTime, GameState currentState, MotionEvent[] userInput) {
 
         for (MotionEvent event : userInput) {
+
             switch (event.getAction()) {
             case MotionEvent.ACTION_DOWN: {
-                currentState.startMove();
-                currentState.setPos((int) event.getX(), (int) event.getY());
+                int dx = (int) Math.abs(currentState.getPos().x - event.getX());
+                int dy = (int) Math.abs(currentState.getPos().y - event.getY());
+                if (dx < 20 && dy < 20) {
+                    currentState.startMove();
+                    currentState.setPos((int) event.getX(), (int) event.getY());
+                }
                 break;
             }
             case MotionEvent.ACTION_MOVE: {
-                currentState.setPos((int) event.getX(), (int) event.getY());
+                if (currentState.isMoving())
+                    currentState.setPos((int) event.getX(), (int) event.getY());
                 break;
             }
             case MotionEvent.ACTION_UP: {
-                currentState.setPos((int) event.getX(), (int) event.getY());
-                currentState.stopMove();
+                if (currentState.isMoving()) {
+                    currentState.setPos((int) event.getX(), (int) event.getY());
+                    currentState.stopMove();
+                }
                 break;
             }
             case MotionEvent.ACTION_CANCEL: {
-                currentState.setPos((int) event.getX(), (int) event.getY());
-                currentState.stopMove();
+                if (currentState.isMoving()) {
+                    currentState.setPos((int) event.getX(), (int) event.getY());
+                    currentState.stopMove();
+                }
                 break;
             }
             }
