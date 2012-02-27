@@ -95,6 +95,7 @@ class GameThread extends Thread implements IGameThread {
             // Check how much to advance the simulation
             long now = System.currentTimeMillis();
             float elapsed = (float) ((now - lastTime_) / 1000.0);
+            lastTime_ = now;
             gameState_ = physicsSimulator_.run(elapsed, gameState_, motionEvents);
 
             renderer_.render(gameState_);
