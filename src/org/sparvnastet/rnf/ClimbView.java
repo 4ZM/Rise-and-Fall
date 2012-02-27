@@ -24,28 +24,37 @@ import android.view.MotionEvent;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 
+/**
+ * The surface view to draw the climbing game on.
+ */
 class ClimbView extends SurfaceView implements SurfaceHolder.Callback {
 
-    Context mContext;
+    private Game game_;
     private IRenderer renderer_;
     private IInputBroker inputBroker_;
 
+    public ClimbView(Context context, Game game) {
+        super(context);
+
+        game_ = game;
+        renderer_ = game.getRenderer();
+        inputBroker_ = game.getInputBroker();
+
+        // Listen to changes in the surface
+        getHolder().addCallback(this);
+
+        // The surface should receive key events
+        setFocusable(true);
+    }
+
+    /**
+     * Move touch events to the input broker and signal that they have been
+     * handled.
+     */
     @Override
     public boolean onTouchEvent(MotionEvent event) {
         inputBroker_.put(event);
         return true;
-    }
-
-    public ClimbView(Context context, IRenderer renderer, IInputBroker inputBroker) {
-        super(context);
-
-        renderer_ = renderer;
-        inputBroker_ = inputBroker;
-
-        // register our interest in hearing about changes to our surface
-        getHolder().addCallback(this);
-
-        setFocusable(true); // make sure we get key events
     }
 
     /**
@@ -54,33 +63,29 @@ class ClimbView extends SurfaceView implements SurfaceHolder.Callback {
      */
     @Override
     public void onWindowFocusChanged(boolean hasWindowFocus) {
-        /*
-         * if (!hasWindowFocus) mRenderingThread.setRendering(false);
-         */
-
-        // This should be a user input event!
+        if (!hasWindowFocus)
+            game_.pause(true);
     }
 
-    /* Callback invoked when the surface dimensions change. */
-    public void surfaceChanged(SurfaceHolder holder, int format, int width, int height) {
-        renderer_.setSurface(holder);
-    }
-
-    /*
+    /**
      * Callback invoked when the Surface has been created and is ready to be
      * used.
      */
     public void surfaceCreated(SurfaceHolder holder) {
-        // start the thread here so that we don't busy-wait in run()
-        // waiting for the surface to be created
         renderer_.setSurface(holder);
         renderer_.enableRendering(true);
     }
 
-    /*
+    /**
+     * Callback invoked when the surface dimensions change.
+     */
+    public void surfaceChanged(SurfaceHolder holder, int format, int width, int height) {
+        renderer_.setSurface(holder);
+    }
+
+    /**
      * Callback invoked when the Surface has been destroyed and must no longer
-     * be touched. WARNING: after this method returns, the Surface/Canvas must
-     * never be touched again!
+     * be touched.
      */
     public void surfaceDestroyed(SurfaceHolder holder) {
         renderer_.enableRendering(false);

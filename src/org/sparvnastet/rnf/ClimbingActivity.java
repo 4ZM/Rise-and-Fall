@@ -28,9 +28,8 @@ import android.view.Window;
 import android.view.WindowManager;
 
 /**
- * Main activity of the application.
- * 
- * Handles user input and system events.
+ * Climb activity is main activity of the game. It shows the climbing view and
+ * handles some basic state save/restore.
  */
 public class ClimbingActivity extends Activity {
     private static final String LOGTAG = "RnF";
@@ -51,7 +50,7 @@ public class ClimbingActivity extends Activity {
 
         getWindow().requestFeature(Window.FEATURE_NO_TITLE);
         getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
-        setContentView(new ClimbView(this, game_.getRenderer(), game_.getInputBroker()));
+        setContentView(new ClimbView(this, game_));
     }
 
     @Override

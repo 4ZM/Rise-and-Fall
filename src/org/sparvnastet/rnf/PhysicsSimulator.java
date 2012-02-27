@@ -21,15 +21,24 @@ package org.sparvnastet.rnf;
 
 import android.view.MotionEvent;
 
+/**
+ * This interface represents a simulation that transform the GameState according
+ * to the laws of physics. The simulation is advanced one time step at the time.
+ */
 interface IPhysicsSimulator {
-    GameState run(double elapsedTime, GameState currentState, MotionEvent[] userInput);
 
+    /*
+     * Transform the currentState and given inputs to a new state. The
+     * currentState represents the world as it was known elapsedTime seconds
+     * ago.
+     */
+    GameState run(float elapsedTime, GameState currentState, MotionEvent[] userInput);
 }
 
 class PhysicsSimulator implements IPhysicsSimulator {
 
     @Override
-    public GameState run(double elapsedTime, GameState currentState, MotionEvent[] userInput) {
+    public GameState run(float elapsedTime, GameState currentState, MotionEvent[] userInput) {
 
         for (MotionEvent event : userInput) {
 

@@ -24,18 +24,45 @@ import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Point;
-import android.view.MotionEvent;
 import android.view.SurfaceHolder;
 
-// responsible for drawing the game state and user input 
+/**
+ * Render (draw) the game state to a surface.
+ */
 interface IRenderer {
+
+    /**
+     * Enable or disable rendering. When disabled (once this method returns),
+     * calls to render won't have any effect.
+     * 
+     * This function is used to prevent the view from being touched during
+     * shutdown when the game thread might try to render as it runs it's last
+     * iteration.
+     * 
+     * @param enable
+     */
     void enableRendering(boolean enable);
 
+    /**
+     * @return true if rendering is enabled, i.e. if calls to render will have
+     *         any effect.
+     */
     boolean isEnabled();
 
+    /**
+     * Set the surface, through the holder proxy, that this renderer will draw
+     * on.
+     * 
+     * @param holder
+     */
     void setSurface(SurfaceHolder holder);
 
-    void render(GameState gameState, MotionEvent[] userInput);
+    /**
+     * Draw the game state on the designated surface.
+     * 
+     * @param gameState
+     */
+    void render(GameState gameState);
 }
 
 abstract class Renderer implements IRenderer {
@@ -61,12 +88,16 @@ abstract class Renderer implements IRenderer {
     public void setSurface(SurfaceHolder holder) {
         synchronized (lock_) {
             surfaceHolder_ = holder;
-            // size might have changed or it might be the first call
         }
     }
 
+    /**
+     * If the enabled flag is set, get a lock to draw to the canvas, save its
+     * state and call the IoC method draw. When after drawing, restore the
+     * canvas and release the lock.
+     */
     @Override
-    public void render(GameState gameState, MotionEvent[] userInput) {
+    public void render(GameState gameState) {
         Canvas c = null;
         synchronized (lock_) {
             if (!enabled_)
@@ -78,8 +109,9 @@ abstract class Renderer implements IRenderer {
                     return;
 
                 c.save();
-                draw(c, gameState, userInput);
+                draw(c, gameState);
                 c.restore();
+
             } finally {
                 if (c != null)
                     surfaceHolder_.unlockCanvasAndPost(c);
@@ -87,10 +119,20 @@ abstract class Renderer implements IRenderer {
         }
     }
 
-    protected abstract void draw(Canvas canvas, GameState gameState, MotionEvent[] userInput);
+    /**
+     * This is implemented in specific renderer classes to provide the domain
+     * specific rendering of a GameState.
+     * 
+     * @param canvas
+     * @param gameState
+     */
+    protected abstract void draw(Canvas canvas, GameState gameState);
 
 }
 
+/**
+ * Render the climbing game state.
+ */
 class ClimbingRenderer extends Renderer {
     private Resources resources_;
 
@@ -99,7 +141,7 @@ class ClimbingRenderer extends Renderer {
     }
 
     @Override
-    protected void draw(Canvas canvas, GameState gameState, MotionEvent[] userInput) {
+    protected void draw(Canvas canvas, GameState gameState) {
         canvas.drawColor(Color.BLACK);
 
         Paint circlePaint = new Paint();

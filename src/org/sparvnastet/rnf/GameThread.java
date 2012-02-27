@@ -23,6 +23,10 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 import android.view.MotionEvent;
 
+/**
+ * An IGameThread represents an asynchronous path of execution that runs the
+ * game. It should handle inputs, advance and then render the game state.
+ */
 interface IGameThread extends Runnable {
 
     public void doStart();
@@ -30,8 +34,13 @@ interface IGameThread extends Runnable {
     public void doStop();
 }
 
-// responsible for running the game loop and keeping track of time between calls
-
+/**
+ * A concrete game thread that handles input, advances the game state through a
+ * physics simulation and renders the state to a renderer.
+ * 
+ * Once started and stopped, the same instance can not be started again. A new
+ * instance is required to continue.
+ */
 class GameThread extends Thread implements IGameThread {
 
     private AtomicBoolean running_ = new AtomicBoolean(false);
@@ -52,6 +61,9 @@ class GameThread extends Thread implements IGameThread {
         gameState_ = gameState;
     }
 
+    /**
+     * Start the game thread.
+     */
     @Override
     public void doStart() {
         running_.set(true);
@@ -59,27 +71,33 @@ class GameThread extends Thread implements IGameThread {
         start();
     }
 
+    /**
+     * Stop the game thread as soon as possible. The method returns directly and
+     * doesn't wait for the thread to stop.
+     */
     @Override
     public void doStop() {
         running_.set(false);
     }
 
+    /**
+     * Run the game loop. 1. Get input, 2. Do physics, 3. Render.
+     * 
+     * While this method is public, it should not be called directly. Use the
+     * doStart/doStop to control execution.
+     */
     @Override
     public void run() {
         while (running_.get()) {
-
-            // 1. Get input
-            // 2. Do physics
-            // 3. Render
 
             MotionEvent[] motionEvents = inputBroker_.takeBundle();
 
             // Check how much to advance the simulation
             long now = System.currentTimeMillis();
-            double elapsed = (now - lastTime_) / 1000.0;
+            float elapsed = (float) ((now - lastTime_) / 1000.0);
             gameState_ = physicsSimulator_.run(elapsed, gameState_, motionEvents);
 
-            renderer_.render(gameState_, motionEvents);
+            renderer_.render(gameState_);
         }
     }
 }

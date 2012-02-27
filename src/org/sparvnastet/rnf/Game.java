@@ -24,7 +24,11 @@ import org.sparvnastet.rnf.GameState.State;
 import android.content.Context;
 import android.os.Bundle;
 
-// Represents a climbing game. Controls the games life time and owns the game components.
+/**
+ * The Game class represents one climbing game. It owns all the components of
+ * the game and is supposed to be the single point of interaction with the game
+ * that e.g. an Activity use.
+ */
 public class Game {
     private GameState gameState_;
     private IInputBroker inputBroker_;

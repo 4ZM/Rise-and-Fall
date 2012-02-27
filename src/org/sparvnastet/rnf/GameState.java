@@ -22,7 +22,11 @@ package org.sparvnastet.rnf;
 import android.graphics.Point;
 import android.os.Bundle;
 
-// Represents the state of the game 
+/**
+ * The GameState class represents the momentary state of a game. It contains all
+ * information required to fully represent the game logic. It does not contain
+ * visualization state.
+ */
 public class GameState {
 
     public enum State {
@@ -34,6 +38,12 @@ public class GameState {
     private Point pos_;
     private boolean isMoving_;
 
+    /**
+     * Create a new default state or restore a saved state.
+     * 
+     * @param savedState
+     *            optional saved state, or null to create a new default state.
+     */
     public GameState(Bundle savedState) {
         if (savedState == null) {
             initialize();
@@ -42,12 +52,21 @@ public class GameState {
         }
     }
 
+    /**
+     * Create a new default state
+     */
     private void initialize() {
         state_ = State.READY;
         pos_ = new Point();
         isMoving_ = false;
     }
 
+    /**
+     * Save the game state in the Bundle. It can later be restored by passing
+     * the Bundle to the constructor of a new GameState.
+     * 
+     * @param outState
+     */
     public void save(Bundle outState) {
         outState.putSerializable("GameState::state_", state_);
         outState.putInt("GameState::pos_.x", pos_.x);
@@ -55,12 +74,23 @@ public class GameState {
         outState.putBoolean("GameState::isMoving_", isMoving_);
     }
 
+    /**
+     * Populate this instance with the state passed as a parameter.
+     * 
+     * @param savedState
+     */
     private void restore(Bundle savedState) {
         state_ = (State) savedState.getSerializable("GameState::state_");
         pos_ = new Point(savedState.getInt("GameState::pos_.x"), savedState.getInt("GameState::pos_.y"));
         isMoving_ = savedState.getBoolean("GameState::isMoving_");
     }
 
+    /**
+     * Change the playing state (paused, won, etc.).
+     * 
+     * @param state
+     * @return true if state was changed, false on invalid transition request
+     */
     public boolean setState(State state) {
         // Assert valid state transitions
         if ((state_ == State.READY && state != State.RUNNING && state != State.CANCELLED)
@@ -73,6 +103,10 @@ public class GameState {
         return true;
     }
 
+    /**
+     * 
+     * @return The playing state of the GameState
+     */
     public State getState() {
         return state_;
     }
@@ -97,5 +131,4 @@ public class GameState {
     public Point getPos() {
         return pos_;
     }
-
 }

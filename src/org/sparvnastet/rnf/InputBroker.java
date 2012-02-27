@@ -23,11 +23,27 @@ import java.util.ArrayList;
 
 import android.view.MotionEvent;
 
-// Responsible for aggregating user input until it can be handled as a batch 
+/**
+ * The input broker is a thread safe, aggregating proxy of input events that is
+ * pushed from the view to some other, non UI, thread.
+ */
 interface IInputBroker {
+
+    /**
+     * Add a new event to the brokers queue.
+     * 
+     * @param motionEvent
+     */
     void put(MotionEvent motionEvent);
 
-    MotionEvent[] takeBundle(); // <- Output event type should be customized?!
+    /**
+     * Get all enqueued events and remove them from the broker. The events are
+     * ordered in the same way as they were pushed into the broker, the oldest
+     * event first and the latest event last.
+     * 
+     * @return
+     */
+    MotionEvent[] takeBundle();
 }
 
 class InputBroker implements IInputBroker {
