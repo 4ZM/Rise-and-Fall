@@ -48,9 +48,14 @@ public class ClimbingActivity extends Activity {
 
         game_ = new Game(this, savedInstanceState);
 
+        ClimbView climbView = new ClimbView(this, game_, game_.getInputHandler().getMotionEventBroker());
+        climbView.getHolder().addCallback(game_.getInputHandler());
+        climbView.getHolder().addCallback(game_.getRenderer());
+
         getWindow().requestFeature(Window.FEATURE_NO_TITLE);
         getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
-        setContentView(new ClimbView(this, game_));
+        setContentView(climbView);
+        game_.start();
     }
 
     @Override

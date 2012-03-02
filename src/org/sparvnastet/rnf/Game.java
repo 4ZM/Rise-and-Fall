@@ -29,47 +29,55 @@ import android.os.Bundle;
  * the game and is supposed to be the single point of interaction with the game
  * that e.g. an Activity use.
  */
-public class Game {
+public class Game implements IGameCtrl {
     private GameState gameState_;
-    private IInputBroker inputBroker_;
-    private IRenderer renderer_;
-    private IPhysicsSimulator physicsSimulator_;
-    private IGameThread gameThread_;
+    private ClimbInputHandler inputHandler_;
+    private ClimbRenderer renderer_;
+    private PhysicsSimulator physicsSimulator_;
+    private IGameRunner gameRunner_;
 
     public Game(Context context, Bundle savedState) {
         gameState_ = new GameState(savedState);
-        inputBroker_ = new InputBroker();
-        renderer_ = new ClimbingRenderer(context.getResources());
+        inputHandler_ = new ClimbInputHandler();
+        renderer_ = new ClimbRenderer(context.getResources());
         physicsSimulator_ = new PhysicsSimulator();
 
-        gameThread_ = new GameThread(physicsSimulator_, renderer_, inputBroker_, gameState_);
-    }
-
-    public IInputBroker getInputBroker() {
-        return inputBroker_;
-    }
-
-    public IRenderer getRenderer() {
-        return renderer_;
+        gameRunner_ = new GameRunner(physicsSimulator_, renderer_, inputHandler_);
     }
 
     public GameState getGameState() {
         return gameState_;
     }
 
-    public void start() {
-        gameThread_.doStart();
+    public ClimbInputHandler getInputHandler() {
+        return inputHandler_;
     }
 
+    public ClimbRenderer getRenderer() {
+        return renderer_;
+    }
+
+    @Override
+    public void start() {
+        /*
+         * TODO if (gameState_.getState() != State.READY) throw XX?
+         */
+        gameRunner_.start(gameState_);
+    }
+
+    @Override
     public void pause(boolean pause) {
         // Let ready state remain ready if paused
         if (pause && gameState_.getState() == State.READY)
             return;
 
+        // TODO kill off / recreate game runner
         gameState_.setState(pause ? State.PAUSED : State.RUNNING);
     }
 
+    @Override
     public void cancel() {
+        // TODO stop game runner!
         gameState_.setState(State.CANCELLED);
     }
 

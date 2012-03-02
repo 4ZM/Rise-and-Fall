@@ -19,7 +19,7 @@
 
 package org.sparvnastet.rnf;
 
-import android.graphics.Canvas;
+import android.view.MotionEvent;
 import android.view.SurfaceHolder;
 
 /**
@@ -28,49 +28,30 @@ import android.view.SurfaceHolder;
  * in the surface being drawn. It also provides a transformation between game
  * and screen coordinates.
  */
-public abstract class Renderer implements IRenderer, SurfaceHolder.Callback {
+public abstract class InputHandler implements IInputHandler, SurfaceHolder.Callback {
 
     // TODO add transform
 
     private Object lock_ = new Object();
     private SurfaceHolder surfaceHolder_ = null;
+    private MotionEventBroker motionEventBroker_ = new MotionEventBroker();
 
-    /**
-     * If the surface is ready for drawing, lock the canvas, save its state and
-     * call the IoC method draw. After drawing, restore the canvas and release
-     * the lock.
-     */
     @Override
-    public void render(GameState gameState) {
-        Canvas c = null;
+    public IMotionEventBroker getMotionEventBroker() {
+        return motionEventBroker_;
+    }
+
+    @Override
+    public GameState handleInput(GameState gameState) {
         synchronized (lock_) {
-            if (surfaceHolder_ == null)
-                return;
+            if (surfaceHolder_ != null)
+                process(gameState, motionEventBroker_.takeBundle());
 
-            try {
-                c = surfaceHolder_.lockCanvas();
-                if (c == null)
-                    return;
-
-                c.save();
-                draw(c, gameState);
-                c.restore();
-
-            } finally {
-                if (c != null)
-                    surfaceHolder_.unlockCanvasAndPost(c);
-            }
+            return gameState;
         }
     }
 
-    /**
-     * This is implemented in specific renderer classes to provide the domain
-     * specific rendering of a GameState.
-     * 
-     * @param canvas
-     * @param gameState
-     */
-    protected abstract void draw(Canvas canvas, GameState gameState);
+    protected abstract void process(GameState gameState, MotionEvent[] events);
 
     // SurfaceHolder.Callback interface implementation
 

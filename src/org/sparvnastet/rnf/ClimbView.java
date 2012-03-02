@@ -29,16 +29,14 @@ import android.view.SurfaceView;
  */
 class ClimbView extends SurfaceView implements SurfaceHolder.Callback {
 
-    private Game game_;
-    private IRenderer renderer_;
-    private IInputBroker inputBroker_;
+    private IGameCtrl game_;
+    private IMotionEventBroker inputBroker_;
 
-    public ClimbView(Context context, Game game) {
+    public ClimbView(Context context, IGameCtrl game, IMotionEventBroker inputBroker) {
         super(context);
 
         game_ = game;
-        renderer_ = game.getRenderer();
-        inputBroker_ = game.getInputBroker();
+        inputBroker_ = inputBroker;
 
         // Listen to changes in the surface
         getHolder().addCallback(this);
@@ -72,15 +70,12 @@ class ClimbView extends SurfaceView implements SurfaceHolder.Callback {
      * used.
      */
     public void surfaceCreated(SurfaceHolder holder) {
-        renderer_.setSurface(holder);
-        renderer_.enableRendering(true);
     }
 
     /**
      * Callback invoked when the surface dimensions change.
      */
     public void surfaceChanged(SurfaceHolder holder, int format, int width, int height) {
-        renderer_.setSurface(holder);
     }
 
     /**
@@ -88,6 +83,5 @@ class ClimbView extends SurfaceView implements SurfaceHolder.Callback {
      * be touched.
      */
     public void surfaceDestroyed(SurfaceHolder holder) {
-        renderer_.enableRendering(false);
     }
 }

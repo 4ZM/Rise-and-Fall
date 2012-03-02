@@ -19,20 +19,16 @@
 
 package org.sparvnastet.rnf;
 
-public class PhysicsSimulator implements IPhysicsSimulator {
+/**
+ * 
+ */
+interface IInputHandler {
+    IMotionEventBroker getMotionEventBroker();
 
-    @Override
-    public GameState run(float dt, GameState currentState) {
-        if (dt < 0)
-            throw new IllegalArgumentException();
-
-        // Update FPS
-        if (dt > 0)
-            currentState.setFps(1.0f / dt);
-        else
-            currentState.setFps(0);
-
-        return currentState;
-    }
-
+    /**
+     * 
+     * 
+     * @param gameState
+     */
+    GameState handleInput(GameState gameState);
 }

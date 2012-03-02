@@ -19,20 +19,12 @@
 
 package org.sparvnastet.rnf;
 
-public class PhysicsSimulator implements IPhysicsSimulator {
+public interface IGameCtrl {
 
-    @Override
-    public GameState run(float dt, GameState currentState) {
-        if (dt < 0)
-            throw new IllegalArgumentException();
+    public void start();
 
-        // Update FPS
-        if (dt > 0)
-            currentState.setFps(1.0f / dt);
-        else
-            currentState.setFps(0);
+    public void pause(boolean pause);
 
-        return currentState;
-    }
+    public void cancel();
 
 }

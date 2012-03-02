@@ -17,22 +17,37 @@
  * along with RnF.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package org.sparvnastet.rnf;
+package org.sparvnastet.rnf.test;
 
-public class PhysicsSimulator implements IPhysicsSimulator {
+import junit.framework.Assert;
+
+import org.sparvnastet.rnf.GameState;
+import org.sparvnastet.rnf.PhysicsSimulator;
+
+import android.test.AndroidTestCase;
+
+public class PhysicsSimulatorTest extends AndroidTestCase {
 
     @Override
-    public GameState run(float dt, GameState currentState) {
-        if (dt < 0)
-            throw new IllegalArgumentException();
-
-        // Update FPS
-        if (dt > 0)
-            currentState.setFps(1.0f / dt);
-        else
-            currentState.setFps(0);
-
-        return currentState;
+    protected void setUp() throws Exception {
     }
 
+    public void testTimeDiff() {
+        PhysicsSimulator sim = new PhysicsSimulator();
+        GameState gs = new GameState(null);
+
+        // Step twice with allowed time diff
+        sim.run(1, gs);
+        sim.run(0, gs);
+
+        // Don't allow negative time
+        try {
+            sim.run(-1, gs);
+            Assert.fail();
+        } catch (IllegalArgumentException e) {
+        } catch (Exception e) {
+            Assert.fail();
+        }
+
+    }
 }

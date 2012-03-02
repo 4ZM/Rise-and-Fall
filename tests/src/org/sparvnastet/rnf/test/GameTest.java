@@ -17,22 +17,17 @@
  * along with RnF.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package org.sparvnastet.rnf;
+package org.sparvnastet.rnf.test;
 
-public class PhysicsSimulator implements IPhysicsSimulator {
+import android.test.AndroidTestCase;
+
+public class GameTest extends AndroidTestCase {
 
     @Override
-    public GameState run(float dt, GameState currentState) {
-        if (dt < 0)
-            throw new IllegalArgumentException();
+    protected void setUp() throws Exception {
 
-        // Update FPS
-        if (dt > 0)
-            currentState.setFps(1.0f / dt);
-        else
-            currentState.setFps(0);
-
-        return currentState;
     }
 
+    public void testXXX() {
+    }
 }

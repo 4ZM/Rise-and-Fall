@@ -19,20 +19,14 @@
 
 package org.sparvnastet.rnf;
 
-public class PhysicsSimulator implements IPhysicsSimulator {
-
-    @Override
-    public GameState run(float dt, GameState currentState) {
-        if (dt < 0)
-            throw new IllegalArgumentException();
-
-        // Update FPS
-        if (dt > 0)
-            currentState.setFps(1.0f / dt);
-        else
-            currentState.setFps(0);
-
-        return currentState;
-    }
-
+/**
+ * Render (draw) the game state to a surface.
+ */
+interface IRenderer {
+    /**
+     * Draw the game state on the designated surface.
+     * 
+     * @param gameState
+     */
+    void render(GameState gameState);
 }

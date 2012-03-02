@@ -19,20 +19,16 @@
 
 package org.sparvnastet.rnf;
 
-public class PhysicsSimulator implements IPhysicsSimulator {
+/**
+ * This interface represents a simulation that transform the GameState according
+ * to the laws of physics. The simulation is advanced one time step at the time.
+ */
+public interface IPhysicsSimulator {
 
-    @Override
-    public GameState run(float dt, GameState currentState) {
-        if (dt < 0)
-            throw new IllegalArgumentException();
-
-        // Update FPS
-        if (dt > 0)
-            currentState.setFps(1.0f / dt);
-        else
-            currentState.setFps(0);
-
-        return currentState;
-    }
-
+    /*
+     * Transform the currentState and given inputs to a new state. The
+     * currentState represents the world as it was known elapsedTime seconds
+     * ago.
+     */
+    GameState run(float dt, GameState gameState);
 }

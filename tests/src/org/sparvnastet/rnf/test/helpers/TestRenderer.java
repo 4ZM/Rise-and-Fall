@@ -17,22 +17,18 @@
  * along with RnF.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package org.sparvnastet.rnf;
+package org.sparvnastet.rnf.test.helpers;
 
-public class PhysicsSimulator implements IPhysicsSimulator {
+import org.sparvnastet.rnf.GameState;
+import org.sparvnastet.rnf.Renderer;
+
+import android.graphics.Canvas;
+
+public class TestRenderer extends Renderer {
+    public boolean drawFlag_ = false;
 
     @Override
-    public GameState run(float dt, GameState currentState) {
-        if (dt < 0)
-            throw new IllegalArgumentException();
-
-        // Update FPS
-        if (dt > 0)
-            currentState.setFps(1.0f / dt);
-        else
-            currentState.setFps(0);
-
-        return currentState;
+    protected void draw(Canvas canvas, GameState gameState) {
+        drawFlag_ = true;
     }
-
 }

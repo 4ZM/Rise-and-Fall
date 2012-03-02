@@ -17,22 +17,25 @@
  * along with RnF.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package org.sparvnastet.rnf;
+package org.sparvnastet.rnf.test.helpers;
 
-public class PhysicsSimulator implements IPhysicsSimulator {
+import org.sparvnastet.rnf.GameState;
+import org.sparvnastet.rnf.InputHandler;
+
+import android.view.MotionEvent;
+
+public class TestInputHandler extends InputHandler {
+    public boolean processFlag_ = false;
+    public MotionEvent[] events_ = null;
 
     @Override
-    public GameState run(float dt, GameState currentState) {
-        if (dt < 0)
-            throw new IllegalArgumentException();
-
-        // Update FPS
-        if (dt > 0)
-            currentState.setFps(1.0f / dt);
-        else
-            currentState.setFps(0);
-
-        return currentState;
+    protected void process(GameState gameState, MotionEvent[] events) {
+        processFlag_ = true;
+        events_ = events;
     }
 
+    public void reset() {
+        processFlag_ = false;
+        events_ = null;
+    }
 }
