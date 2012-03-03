@@ -19,6 +19,8 @@
 
 package org.sparvnastet.rnf;
 
+import org.jbox2d.common.Vec2;
+
 import android.graphics.Canvas;
 import android.view.SurfaceHolder;
 
@@ -34,6 +36,9 @@ public abstract class Renderer implements IRenderer, SurfaceHolder.Callback {
 
     private Object lock_ = new Object();
     private SurfaceHolder surfaceHolder_ = null;
+    private CoordinateTransform coordTransform_;
+    private int surfWidth_;
+    private int surfHeight_;
 
     /**
      * If the surface is ready for drawing, lock the canvas, save its state and
@@ -46,6 +51,14 @@ public abstract class Renderer implements IRenderer, SurfaceHolder.Callback {
         synchronized (lock_) {
             if (surfaceHolder_ == null)
                 return;
+
+            // Set up the transform game window -> screen
+            Vec2 ws = gameState.getWindowSize();
+            if (ws.x == 0 || ws.y == 0)
+                return;
+
+            coordTransform_ = new CoordinateTransform((float) surfWidth_ / ws.x, -(float) surfHeight_ / ws.y,
+                    surfWidth_ / 2.0f, surfHeight_ / 2.0f);
 
             try {
                 c = surfaceHolder_.lockCanvas();
@@ -63,6 +76,10 @@ public abstract class Renderer implements IRenderer, SurfaceHolder.Callback {
         }
     }
 
+    protected Vec2 toScreenCoords(GameState gs, Vec2 p) {
+        return coordTransform_.transform(gs.worldToWindow(p));
+    }
+
     /**
      * This is implemented in specific renderer classes to provide the domain
      * specific rendering of a GameState.
@@ -76,15 +93,15 @@ public abstract class Renderer implements IRenderer, SurfaceHolder.Callback {
 
     @Override
     public void surfaceChanged(SurfaceHolder holder, int format, int width, int height) {
-        // TODO Set transform here
         synchronized (lock_) {
             surfaceHolder_ = holder;
+            surfWidth_ = width;
+            surfHeight_ = height;
         }
     }
 
     @Override
     public void surfaceCreated(SurfaceHolder holder) {
-        // TODO Set transform here
         synchronized (lock_) {
             surfaceHolder_ = holder;
         }
@@ -94,6 +111,8 @@ public abstract class Renderer implements IRenderer, SurfaceHolder.Callback {
     public void surfaceDestroyed(SurfaceHolder holder) {
         synchronized (lock_) {
             surfaceHolder_ = null;
+            surfWidth_ = 0;
+            surfHeight_ = 0;
         }
     }
 }

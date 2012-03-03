@@ -19,6 +19,7 @@
 
 package org.sparvnastet.rnf.test;
 
+import org.jbox2d.common.Vec2;
 import org.sparvnastet.rnf.GameState;
 import org.sparvnastet.rnf.GameState.State;
 
@@ -75,5 +76,21 @@ public class GameStateTest extends AndroidTestCase {
         assertTrue(gs.setState(State.RUNNING));
         assertTrue(gs.setState(State.LOST));
         assertEquals(State.LOST, gs.getState());
+    }
+
+    public void testWorldWindow() {
+        GameState gs = new GameState(null);
+
+        gs.setWorldSize(new Vec2(10.0f, 10.0f));
+        gs.setWindowPos(new Vec2(2.5f, -2.5f));
+        gs.setWindowSize(new Vec2(3.0f, 3.0f));
+
+        Vec2 winToWorld = gs.windowToWorld(new Vec2(0.0f, 0.0f));
+        assertEquals(2.5f, winToWorld.x);
+        assertEquals(-2.5f, winToWorld.y);
+
+        Vec2 worldToWin = gs.worldToWindow(new Vec2(0.0f, 0.0f));
+        assertEquals(-2.5f, worldToWin.x);
+        assertEquals(2.5f, worldToWin.y);
     }
 }

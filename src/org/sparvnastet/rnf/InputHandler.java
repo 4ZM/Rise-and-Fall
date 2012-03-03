@@ -19,6 +19,9 @@
 
 package org.sparvnastet.rnf;
 
+import org.jbox2d.common.Vec2;
+
+import android.graphics.Canvas;
 import android.view.MotionEvent;
 import android.view.SurfaceHolder;
 
@@ -35,6 +38,9 @@ public abstract class InputHandler implements IInputHandler, SurfaceHolder.Callb
     private Object lock_ = new Object();
     private SurfaceHolder surfaceHolder_ = null;
     private MotionEventBroker motionEventBroker_ = new MotionEventBroker();
+    private CoordinateTransform coordTransform_;
+    private int surfWidth_;
+    private int surfHeight_;
 
     @Override
     public IMotionEventBroker getMotionEventBroker() {
@@ -44,11 +50,21 @@ public abstract class InputHandler implements IInputHandler, SurfaceHolder.Callb
     @Override
     public GameState handleInput(GameState gameState) {
         synchronized (lock_) {
-            if (surfaceHolder_ != null)
-                process(gameState, motionEventBroker_.takeBundle());
+            if (surfaceHolder_ != null && surfHeight_ != 0.0f && surfWidth_ != 0.0f) {
 
+                // Set up the transform screen -> game window
+                Vec2 ws = gameState.getWindowSize();
+                coordTransform_ = new CoordinateTransform(ws.x / surfWidth_, -ws.y / surfHeight_, -ws.x / 2.0f,
+                        ws.y / 2.0f);
+
+                process(gameState, motionEventBroker_.takeBundle());
+            }
             return gameState;
         }
+    }
+
+    protected Vec2 toWorldCoords(GameState gs, Vec2 p) {
+        return gs.windowToWorld(coordTransform_.transform(p));
     }
 
     protected abstract void process(GameState gameState, MotionEvent[] events);
@@ -57,9 +73,10 @@ public abstract class InputHandler implements IInputHandler, SurfaceHolder.Callb
 
     @Override
     public void surfaceChanged(SurfaceHolder holder, int format, int width, int height) {
-        // TODO Set transform here
         synchronized (lock_) {
             surfaceHolder_ = holder;
+            surfWidth_ = width;
+            surfHeight_ = height;
         }
     }
 
@@ -75,6 +92,8 @@ public abstract class InputHandler implements IInputHandler, SurfaceHolder.Callb
     public void surfaceDestroyed(SurfaceHolder holder) {
         synchronized (lock_) {
             surfaceHolder_ = null;
+            surfHeight_ = 0;
+            surfWidth_ = 0;
         }
     }
 }

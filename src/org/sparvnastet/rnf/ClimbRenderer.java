@@ -1,10 +1,11 @@
 package org.sparvnastet.rnf;
 
+import org.jbox2d.common.Vec2;
+
 import android.content.res.Resources;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
-import android.graphics.Point;
 
 /**
  * Render the climbing game state.
@@ -20,10 +21,9 @@ class ClimbRenderer extends Renderer {
     protected void draw(Canvas canvas, GameState gameState) {
         canvas.drawColor(Color.BLACK);
 
+        Vec2 p = toScreenCoords(gameState, gameState.getPos());
+
         Paint circlePaint = new Paint();
-
-        Point p = gameState.getPos();
-
         if (gameState.isMoving()) {
             circlePaint.setARGB(255, 200, 40, 40);
             canvas.drawCircle(p.x, p.y, 40, circlePaint);
@@ -40,5 +40,8 @@ class ClimbRenderer extends Renderer {
         Paint textPaint = new Paint();
         textPaint.setARGB(255, 220, 220, 220);
         canvas.drawText("FPS: " + gameState.getFps(), 10.0f, 10.0f, textPaint);
+        canvas.drawText("X: " + gameState.getPos().x, 10.0f, 20.0f, textPaint);
+        canvas.drawText("Y: " + gameState.getPos().y, 10.0f, 30.0f, textPaint);
+
     }
 }

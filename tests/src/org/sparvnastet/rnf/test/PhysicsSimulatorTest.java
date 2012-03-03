@@ -48,6 +48,5 @@ public class PhysicsSimulatorTest extends AndroidTestCase {
         } catch (Exception e) {
             Assert.fail();
         }
-
     }
 }

@@ -19,6 +19,8 @@
 
 package org.sparvnastet.rnf;
 
+import org.jbox2d.common.Vec2;
+
 import android.view.MotionEvent;
 
 /**
@@ -29,42 +31,40 @@ public class ClimbInputHandler extends InputHandler {
     @Override
     public void process(GameState gameState, MotionEvent[] events) {
 
-        // TODO Use transform
-
         for (MotionEvent event : events) {
+
+            Vec2 p = toWorldCoords(gameState, new Vec2(event.getX(), event.getY()));
 
             switch (event.getAction()) {
             case MotionEvent.ACTION_DOWN: {
-                int dx = (int) Math.abs(gameState.getPos().x - event.getX());
-                int dy = (int) Math.abs(gameState.getPos().y - event.getY());
-                if (dx < 40 && dy < 40) {
+                float dx = Math.abs(gameState.getPos().x - p.x);
+                float dy = Math.abs(gameState.getPos().y - p.y);
+                if (dx < 1.0f && dy < 1.0f) {
                     gameState.startMove();
-                    gameState.setPos((int) event.getX(), (int) event.getY());
+                    gameState.setPos(p);
                 }
                 break;
             }
             case MotionEvent.ACTION_MOVE: {
                 if (gameState.isMoving())
-                    gameState.setPos((int) event.getX(), (int) event.getY());
+                    gameState.setPos(p);
                 break;
             }
             case MotionEvent.ACTION_UP: {
                 if (gameState.isMoving()) {
-                    gameState.setPos((int) event.getX(), (int) event.getY());
+                    gameState.setPos(p);
                     gameState.stopMove();
                 }
                 break;
             }
             case MotionEvent.ACTION_CANCEL: {
                 if (gameState.isMoving()) {
-                    gameState.setPos((int) event.getX(), (int) event.getY());
+                    gameState.setPos(p);
                     gameState.stopMove();
                 }
                 break;
             }
             }
         }
-
     }
-
 }

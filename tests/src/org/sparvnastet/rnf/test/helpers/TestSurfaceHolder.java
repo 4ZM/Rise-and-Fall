@@ -36,8 +36,10 @@ public class TestSurfaceHolder implements SurfaceHolder {
     }
 
     public void announceCreated() {
-        for (Callback cb : cbs_)
+        for (Callback cb : cbs_) {
             cb.surfaceCreated(this);
+            announceChanged();
+        }
     }
 
     public void annouceDestroyed() {

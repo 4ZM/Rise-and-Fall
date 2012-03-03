@@ -19,7 +19,8 @@
 
 package org.sparvnastet.rnf;
 
-import android.graphics.Point;
+import org.jbox2d.common.Vec2;
+
 import android.os.Bundle;
 
 /**
@@ -35,10 +36,16 @@ public class GameState {
 
     private State state_;
 
-    private Point pos_;
+    private Vec2 pos_;
     private boolean isMoving_;
 
     private float fps_;
+
+    private Vec2 worldSize_;
+    private Vec2 windowSize_;
+    private Vec2 windowPos_;
+
+    // Transient data (derived)
 
     /**
      * Create a new default state or restore a saved state.
@@ -59,8 +66,11 @@ public class GameState {
      */
     private void initialize() {
         state_ = State.READY;
-        pos_ = new Point();
+        pos_ = new Vec2(0.0f, 0.0f);
         isMoving_ = false;
+        worldSize_ = new Vec2(20.0f, 20.0f);
+        windowSize_ = new Vec2(20.0f, 20.0f);
+        windowPos_ = new Vec2(0.0f, 0.0f);
     }
 
     /**
@@ -71,8 +81,14 @@ public class GameState {
      */
     public void save(Bundle outState) {
         outState.putSerializable("GameState::state_", state_);
-        outState.putInt("GameState::pos_.x", pos_.x);
-        outState.putInt("GameState::pos_.y", pos_.y);
+        outState.putFloat("GameState::pos_.x", pos_.x);
+        outState.putFloat("GameState::pos_.y", pos_.y);
+        outState.putFloat("GameState::worldSize_.x", worldSize_.x);
+        outState.putFloat("GameState::worldSize_.y", worldSize_.y);
+        outState.putFloat("GameState::windowSize_.x", windowSize_.x);
+        outState.putFloat("GameState::windowSize_.y", windowSize_.y);
+        outState.putFloat("GameState::windowPos_.x", windowPos_.x);
+        outState.putFloat("GameState::windowPos_.y", windowPos_.y);
         outState.putBoolean("GameState::isMoving_", isMoving_);
     }
 
@@ -83,7 +99,14 @@ public class GameState {
      */
     private void restore(Bundle savedState) {
         state_ = (State) savedState.getSerializable("GameState::state_");
-        pos_ = new Point(savedState.getInt("GameState::pos_.x"), savedState.getInt("GameState::pos_.y"));
+        pos_ = new Vec2(savedState.getFloat("GameState::pos_.x"), savedState.getFloat("GameState::pos_.y"));
+        worldSize_ = new Vec2(savedState.getFloat("GameState::worldSize_.x"),
+                savedState.getFloat("GameState::worldSize_.y"));
+        windowSize_ = new Vec2(savedState.getFloat("GameState::windowSize_.x"),
+                savedState.getFloat("GameState::windowSize_.y"));
+        windowPos_ = new Vec2(savedState.getFloat("GameState::windowPos_.x"),
+                savedState.getFloat("GameState::windowPos_.y"));
+
         isMoving_ = savedState.getBoolean("GameState::isMoving_");
     }
 
@@ -125,12 +148,11 @@ public class GameState {
         return isMoving_;
     }
 
-    public void setPos(int x, int y) {
-        pos_.x = x;
-        pos_.y = y;
+    public void setPos(Vec2 pos) {
+        setVec2(pos_, pos);
     }
 
-    public Point getPos() {
+    public Vec2 getPos() {
         return pos_;
     }
 
@@ -140,5 +162,42 @@ public class GameState {
 
     public void setFps(float fps) {
         fps_ = fps;
+    }
+
+    public Vec2 getWorldSize() {
+        return worldSize_;
+    }
+
+    public void setWorldSize(Vec2 worldSize) {
+        setVec2(worldSize_, worldSize);
+    }
+
+    public Vec2 getWindowSize() {
+        return worldSize_;
+    }
+
+    public void setWindowSize(Vec2 windowSize) {
+        setVec2(windowSize_, windowSize);
+    }
+
+    public Vec2 getWindowPos() {
+        return windowPos_;
+    }
+
+    public void setWindowPos(Vec2 windowPos) {
+        setVec2(windowPos_, windowPos);
+    }
+
+    public Vec2 worldToWindow(Vec2 p) {
+        return new Vec2(p.x - windowPos_.x, p.y - windowPos_.y);
+    }
+
+    public Vec2 windowToWorld(Vec2 p) {
+        return new Vec2(windowPos_.x + p.x, windowPos_.y + p.y);
+    }
+
+    private void setVec2(Vec2 dst, Vec2 src) {
+        dst.x = src.x;
+        dst.y = src.y;
     }
 }
