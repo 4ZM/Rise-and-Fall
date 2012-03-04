@@ -21,7 +21,7 @@ package org.sparvnastet.rnf;
 
 import org.sparvnastet.rnf.GameState.State;
 
-import android.content.Context;
+import android.content.res.Resources;
 import android.os.Bundle;
 
 /**
@@ -36,10 +36,10 @@ public class Game implements IGameCtrl {
     private PhysicsSimulator physicsSimulator_;
     private IGameRunner gameRunner_;
 
-    public Game(Context context, Bundle savedState) {
+    public Game(Resources resources, Bundle savedState) {
         gameState_ = new GameState(savedState);
         inputHandler_ = new ClimbInputHandler();
-        renderer_ = new ClimbRenderer(context.getResources());
+        renderer_ = new ClimbRenderer(resources);
         physicsSimulator_ = new PhysicsSimulator();
 
         gameRunner_ = new GameRunner(physicsSimulator_, renderer_, inputHandler_);
@@ -63,21 +63,33 @@ public class Game implements IGameCtrl {
          * TODO if (gameState_.getState() != State.READY) throw XX?
          */
         gameRunner_.start(gameState_);
+        gameState_.setState(GameState.State.RUNNING);
     }
 
     @Override
     public void pause(boolean pause) {
+        // TODO Test for invalid states
+
+        GameState.State state = gameState_.getState();
+
         // Let ready state remain ready if paused
-        if (pause && gameState_.getState() == State.READY)
+        if (pause && state == State.READY)
             return;
 
-        // TODO kill off / recreate game runner
-        gameState_.setState(pause ? State.PAUSED : State.RUNNING);
+        if (pause) {
+            gameRunner_.stop();
+            gameState_.setState(State.PAUSED);
+        } else {
+            gameRunner_ = new GameRunner(physicsSimulator_, renderer_, inputHandler_);
+            gameState_.setState(State.RUNNING);
+            gameRunner_.start(gameState_);
+        }
     }
 
     @Override
     public void cancel() {
         // TODO stop game runner!
+        gameRunner_.stop();
         gameState_.setState(State.CANCELLED);
     }
 

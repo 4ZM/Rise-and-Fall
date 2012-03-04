@@ -46,7 +46,7 @@ public class ClimbingActivity extends Activity {
         super.onCreate(savedInstanceState);
         Log.i(LOGTAG, "onCreate");
 
-        game_ = new Game(this, savedInstanceState);
+        game_ = new Game(getResources(), savedInstanceState);
 
         ClimbView climbView = new ClimbView(this, game_, game_.getInputHandler().getMotionEventBroker());
         climbView.getHolder().addCallback(game_.getInputHandler());
@@ -106,7 +106,6 @@ public class ClimbingActivity extends Activity {
         super.onPause();
         Log.i(LOGTAG, "in onPause");
         game_.pause(true);
-
     }
 
     public GameState.State getGameState() {

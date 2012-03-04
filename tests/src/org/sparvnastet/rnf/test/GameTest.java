@@ -19,7 +19,11 @@
 
 package org.sparvnastet.rnf.test;
 
+import org.sparvnastet.rnf.Game;
+import org.sparvnastet.rnf.GameState;
+
 import android.test.AndroidTestCase;
+import android.test.mock.MockResources;
 
 public class GameTest extends AndroidTestCase {
 
@@ -28,6 +32,19 @@ public class GameTest extends AndroidTestCase {
 
     }
 
-    public void testXXX() {
+    public void testStartStop() {
+        Game g = new Game(new GameResouces(), null);
+        assertEquals(GameState.State.READY, g.getGameState().getState());
+        g.start();
+        assertEquals(GameState.State.RUNNING, g.getGameState().getState());
+        g.pause(true);
+        assertEquals(GameState.State.PAUSED, g.getGameState().getState());
+        g.pause(false);
+        assertEquals(GameState.State.RUNNING, g.getGameState().getState());
+        g.cancel();
+        assertEquals(GameState.State.CANCELLED, g.getGameState().getState());
+    }
+
+    class GameResouces extends MockResources {
     }
 }

@@ -22,6 +22,7 @@ package org.sparvnastet.rnf.test;
 import org.sparvnastet.rnf.ClimbingActivity;
 import org.sparvnastet.rnf.GameState;
 
+import android.app.Instrumentation;
 import android.test.ActivityInstrumentationTestCase2;
 
 public class ClimbingActivityTest extends ActivityInstrumentationTestCase2<ClimbingActivity> {
@@ -41,21 +42,20 @@ public class ClimbingActivityTest extends ActivityInstrumentationTestCase2<Climb
     }
 
     public void testStateDestroy() {
-        assertEquals(GameState.State.READY, activity_.getGameState());
+        assertEquals(GameState.State.RUNNING, activity_.getGameState());
 
         activity_.finish();
         activity_ = getActivity();
 
-        assertEquals(GameState.State.READY, activity_.getGameState());
+        assertEquals(GameState.State.RUNNING, activity_.getGameState());
     }
-/*
+
     public void testStatePause() {
         Instrumentation instrumentation = this.getInstrumentation();
-
-        assertEquals(GameState.State.READY, activity_.getGameState());
+        assertEquals(GameState.State.RUNNING, activity_.getGameState());
         instrumentation.callActivityOnPause(activity_);
         instrumentation.callActivityOnResume(activity_);
-        assertEquals(GameState.State.READY, activity_.getGameState());
-    }*/
+        assertEquals(GameState.State.PAUSED, activity_.getGameState());
+    }
 
 }

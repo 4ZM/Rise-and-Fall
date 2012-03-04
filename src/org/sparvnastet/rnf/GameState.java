@@ -45,7 +45,6 @@ public class GameState {
 
     private State state_;
 
-    // private Vec2 pos_;
     private boolean isMoving_;
 
     private float fps_;
@@ -67,6 +66,18 @@ public class GameState {
      *            optional saved state, or null to create a new default state.
      */
     public GameState(Bundle savedState) {
+        isMoving_ = false;
+        worldSize_ = new Vec2(20.0f, 20.0f);
+        Vec2 gravity = new Vec2(0, -9.8f);
+        world_ = new World(gravity, true);
+
+        ground_ = createGround();
+
+        mjd_ = new MouseJointDef();
+        mjd_.bodyA = ground_;
+        mjd_.target.setZero();
+        mjd_.maxForce = 3000.0f;
+
         if (savedState == null) {
             initialize();
         } else {
@@ -79,52 +90,60 @@ public class GameState {
      */
     private void initialize() {
         state_ = State.READY;
-        // pos_ = new Vec2(0.0f, 0.0f);
         isMoving_ = false;
-        worldSize_ = new Vec2(20.0f, 20.0f);
         windowSize_ = new Vec2(20.0f, 20.0f);
         windowPos_ = new Vec2(0.0f, 0.0f);
 
-        Vec2 gravity = new Vec2(0, -9.8f);
-        world_ = new World(gravity, true);
-
-        // Create the ground
-        ground_ = null;
-        {
-            BodyDef bd = new BodyDef();
-            ground_ = world_.createBody(bd);
-
-            PolygonShape shape = new PolygonShape();
-            shape.setAsEdge(new Vec2(-worldSize_.x / 2.0f, -worldSize_.y / 2.0f), new Vec2(worldSize_.x / 2.0f,
-                    -worldSize_.y / 2.0f));
-            ground_.createFixture(shape, 0.0f);
-        }
-
         // Create the dot circle
-        dot_ = null;
-        {
-            CircleShape shape = new CircleShape();
-            shape.m_radius = 0.5f;
+        dot_ = createDot(new Vec2(0, 0));
+    }
 
-            BodyDef bd = new BodyDef();
-            bd.type = BodyType.DYNAMIC;
-            bd.position.set(0.0f, 0.0f);
-            dot_ = world_.createBody(bd);
+    private Body createDot(Vec2 pos) {
+        CircleShape shape = new CircleShape();
+        shape.m_radius = 0.5f;
 
-            FixtureDef fd = new FixtureDef();
-            fd.shape = shape;
-            fd.density = 1.0f;
-            fd.friction = 0.3f;
-            fd.restitution = 0.5f;
-            dot_.createFixture(fd);
-        }
+        BodyDef bd = new BodyDef();
+        bd.type = BodyType.DYNAMIC;
+        bd.position.set(pos);
+        Body dot = world_.createBody(bd);
+        dot.setBullet(true);
 
-        mjd_ = new MouseJointDef();
-        mjd_.bodyA = ground_;
-        mjd_.bodyB = dot_;
-        mjd_.target.setZero();
-        mjd_.maxForce = 3000.0f * dot_.m_mass;
+        FixtureDef fd = new FixtureDef();
+        fd.shape = shape;
+        fd.density = 1.0f;
+        fd.friction = 0.5f;
+        fd.restitution = 0.5f;
+        dot.createFixture(fd);
 
+        return dot;
+    }
+
+    private Body createGround() {
+        BodyDef bd = new BodyDef();
+        Body groundBody = world_.createBody(bd);
+
+        PolygonShape shape;
+
+        shape = new PolygonShape();
+        shape.setAsEdge(new Vec2(-worldSize_.x / 2.0f, -worldSize_.y / 2.0f), new Vec2(worldSize_.x / 2.0f,
+                -worldSize_.y / 2.0f));
+        groundBody.createFixture(shape, 0.0f);
+
+        shape = new PolygonShape();
+        shape.setAsEdge(new Vec2(-worldSize_.x / 2.0f, worldSize_.y / 2.0f), new Vec2(worldSize_.x / 2.0f,
+                worldSize_.y / 2.0f));
+        groundBody.createFixture(shape, 0.0f);
+
+        shape = new PolygonShape();
+        shape.setAsEdge(new Vec2(-worldSize_.x / 2.0f, -worldSize_.y / 2.0f), new Vec2(-worldSize_.x / 2.0f,
+                worldSize_.y / 2.0f));
+        groundBody.createFixture(shape, 0.0f);
+
+        shape = new PolygonShape();
+        shape.setAsEdge(new Vec2(worldSize_.x / 2.0f, -worldSize_.y / 2.0f), new Vec2(worldSize_.x / 2.0f,
+                worldSize_.y / 2.0f));
+        groundBody.createFixture(shape, 0.0f);
+        return groundBody;
     }
 
     /**
@@ -135,16 +154,13 @@ public class GameState {
      */
     public void save(Bundle outState) {
         outState.putSerializable("GameState::state_", state_);
-        /*
-         * outState.putFloat("GameState::pos_.x", pos_.x);
-         * outState.putFloat("GameState::pos_.y", pos_.y);
-         */outState.putFloat("GameState::worldSize_.x", worldSize_.x);
-        outState.putFloat("GameState::worldSize_.y", worldSize_.y);
+
+        outState.putFloat("GameState::pos_.x", dot_.m_xf.position.x);
+        outState.putFloat("GameState::pos_.y", dot_.m_xf.position.y);
         outState.putFloat("GameState::windowSize_.x", windowSize_.x);
         outState.putFloat("GameState::windowSize_.y", windowSize_.y);
         outState.putFloat("GameState::windowPos_.x", windowPos_.x);
         outState.putFloat("GameState::windowPos_.y", windowPos_.y);
-        outState.putBoolean("GameState::isMoving_", isMoving_);
     }
 
     /**
@@ -154,17 +170,15 @@ public class GameState {
      */
     private void restore(Bundle savedState) {
         state_ = (State) savedState.getSerializable("GameState::state_");
-        /*
-         * pos_ = new Vec2(savedState.getFloat("GameState::pos_.x"),
-         * savedState.getFloat("GameState::pos_.y"));
-         */worldSize_ = new Vec2(savedState.getFloat("GameState::worldSize_.x"),
-                savedState.getFloat("GameState::worldSize_.y"));
+        if (state_ == State.RUNNING)
+            state_ = State.PAUSED;
+
         windowSize_ = new Vec2(savedState.getFloat("GameState::windowSize_.x"),
                 savedState.getFloat("GameState::windowSize_.y"));
         windowPos_ = new Vec2(savedState.getFloat("GameState::windowPos_.x"),
                 savedState.getFloat("GameState::windowPos_.y"));
 
-        isMoving_ = savedState.getBoolean("GameState::isMoving_");
+        dot_ = createDot(new Vec2(savedState.getFloat("GameState::pos_.x"), savedState.getFloat("GameState::pos_.y")));
     }
 
     /**
@@ -195,6 +209,7 @@ public class GameState {
 
     public void startMove(Vec2 pos) {
         isMoving_ = true;
+        mjd_.bodyB = dot_;
         mjd_.target.set(pos);
         mj_ = (MouseJoint) world_.createJoint(mjd_);
         dot_.setAwake(true);
@@ -212,7 +227,6 @@ public class GameState {
 
     public void setPos(Vec2 pos) {
         mj_.setTarget(pos);
-        //dot_.m_xf.position.set(pos);
         dot_.setAwake(true);
     }
 

@@ -23,6 +23,7 @@ import org.jbox2d.common.Vec2;
 import org.sparvnastet.rnf.GameState;
 import org.sparvnastet.rnf.GameState.State;
 
+import android.os.Bundle;
 import android.test.AndroidTestCase;
 
 public class GameStateTest extends AndroidTestCase {
@@ -92,5 +93,51 @@ public class GameStateTest extends AndroidTestCase {
         Vec2 worldToWin = gs.worldToWindow(new Vec2(0.0f, 0.0f));
         assertEquals(-2.5f, worldToWin.x);
         assertEquals(2.5f, worldToWin.y);
+    }
+
+    public void testSaveRestore() {
+
+        // Create and restore a brand new game
+        Bundle b = new Bundle();
+        GameState originalState = new GameState(null);
+        originalState.save(b);
+        GameState restoredState = new GameState(b);
+
+        // Assert that the properties are restored
+        assertEquals(GameState.State.READY, originalState.getState());
+        assertEquals(originalState.getState(), restoredState.getState());
+        assertEquals(originalState.getPos(), restoredState.getPos());
+        assertEquals(originalState.getWindowPos(), restoredState.getWindowPos());
+        assertEquals(originalState.getWindowSize(), restoredState.getWindowSize());
+
+        // Create and restore a modified game
+        b = new Bundle();
+        originalState = new GameState(null);
+        Vec2 pos = new Vec2(12.0f, 34.0f);
+        originalState.startMove(pos);
+        originalState.setState(GameState.State.RUNNING);
+
+        originalState.save(b);
+        restoredState = new GameState(b);
+
+        // Running state is restored to a paused state, user motion is aborted.
+        assertEquals(GameState.State.RUNNING, originalState.getState());
+        assertEquals(GameState.State.PAUSED, restoredState.getState());
+        assertEquals(true, originalState.isMoving());
+        assertEquals(false, restoredState.isMoving());
+
+        // Verify that the other properties are restored
+        assertEquals(originalState.getPos(), restoredState.getPos());
+        assertEquals(originalState.getWindowPos(), restoredState.getWindowPos());
+        assertEquals(originalState.getWindowSize(), restoredState.getWindowSize());
+
+        // Create and restore a game in a final state
+        b = new Bundle();
+        originalState = new GameState(null);
+        originalState.setState(GameState.State.RUNNING);
+        originalState.setState(GameState.State.WON);
+        originalState.save(b);
+        restoredState = new GameState(b);
+        assertEquals(GameState.State.WON, restoredState.getState());
     }
 }
