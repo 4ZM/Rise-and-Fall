@@ -26,7 +26,7 @@ public class PhysicsSimulator implements IPhysicsSimulator {
         if (dt < 0)
             throw new IllegalArgumentException();
 
-        currentState.world_.step(dt, 8, 3);
+        currentState.world_.step(1.0f/50.0f, 8, 3);
 
         // Update FPS
         if (dt > 0)

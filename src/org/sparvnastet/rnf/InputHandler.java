@@ -37,7 +37,6 @@ public abstract class InputHandler implements IInputHandler, SurfaceHolder.Callb
     private Object lock_ = new Object();
     private SurfaceHolder surfaceHolder_ = null;
     private MotionEventBroker motionEventBroker_ = new MotionEventBroker();
-    private CoordinateTransform coordTransform_;
     private int surfWidth_;
     private int surfHeight_;
 
@@ -50,12 +49,6 @@ public abstract class InputHandler implements IInputHandler, SurfaceHolder.Callb
     public GameState handleInput(GameState gameState) {
         synchronized (lock_) {
             if (surfaceHolder_ != null && surfHeight_ != 0.0f && surfWidth_ != 0.0f) {
-
-                // Set up the transform screen -> game window
-                Vec2 ws = gameState.getWindowSize();
-                coordTransform_ = new CoordinateTransform(ws.x / surfWidth_, -ws.y / surfHeight_, -ws.x / 2.0f,
-                        ws.y / 2.0f);
-
                 process(gameState, motionEventBroker_.takeBundle());
             }
             return gameState;
@@ -63,7 +56,13 @@ public abstract class InputHandler implements IInputHandler, SurfaceHolder.Callb
     }
 
     protected Vec2 toWorldCoords(GameState gs, Vec2 p) {
-        return gs.windowToWorld(coordTransform_.transform(p));
+        Vec2 ws = gs.getWindowSize();
+        float xs = ws.x / surfWidth_;
+        float ys = -ws.y / surfHeight_;
+        float xo = -ws.x / 2.0f;
+        float yo = ws.y / 2.0f;
+
+        return gs.windowToWorld(new Vec2(p.x * xs + xo, p.y * ys + yo));
     }
 
     protected abstract void process(GameState gameState, MotionEvent[] events);

@@ -32,11 +32,8 @@ import android.view.SurfaceHolder;
  */
 public abstract class Renderer implements IRenderer, SurfaceHolder.Callback {
 
-    // TODO add transform
-
     private Object lock_ = new Object();
     private SurfaceHolder surfaceHolder_ = null;
-    private CoordinateTransform coordTransform_;
     private int surfWidth_;
     private int surfHeight_;
 
@@ -57,9 +54,6 @@ public abstract class Renderer implements IRenderer, SurfaceHolder.Callback {
             if (ws.x == 0 || ws.y == 0)
                 return;
 
-            coordTransform_ = new CoordinateTransform((float) surfWidth_ / ws.x, -(float) surfHeight_ / ws.y,
-                    surfWidth_ / 2.0f, surfHeight_ / 2.0f);
-
             try {
                 c = surfaceHolder_.lockCanvas();
                 if (c == null)
@@ -76,8 +70,20 @@ public abstract class Renderer implements IRenderer, SurfaceHolder.Callback {
         }
     }
 
+    protected Vec2 screenScale(GameState gs) {
+        Vec2 ws = gs.getWindowSize();
+        return new Vec2((float) surfWidth_ / ws.x, -(float) surfHeight_ / ws.y);
+    }
+
     protected Vec2 toScreenCoords(GameState gs, Vec2 p) {
-        return coordTransform_.transform(gs.worldToWindow(p));
+        Vec2 ws = gs.getWindowSize();
+        float xs = (float) surfWidth_ / ws.x;
+        float ys = -(float) surfHeight_ / ws.y;
+        float xo = surfWidth_ / 2.0f;
+        float yo = surfHeight_ / 2.0f;
+
+        p = gs.worldToWindow(p);
+        return new Vec2(p.x * xs + xo, p.y * ys + yo);
     }
 
     /**
