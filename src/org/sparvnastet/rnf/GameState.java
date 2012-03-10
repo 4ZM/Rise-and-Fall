@@ -66,6 +66,10 @@ public class GameState {
     private Body leftLeg_;
     private Body rightThigh_;
     private Body rightLeg_;
+    private Body leftUpperArm_;
+    private Body leftLowerArm_;
+    private Body rightUpperArm_;
+    private Body rightLowerArm_;
 
     /**
      * Create a new default state or restore a saved state.
@@ -152,6 +156,24 @@ public class GameState {
         Vec2 rightLegPos = new Vec2(rightThighPos.x, rightThighPos.y - thighDim.y / 2.0f - legDim.y / 2.0f);
         rightLeg_ = createLimb(rightLegPos, legDim);
 
+        Vec2 upperArmDim = new Vec2(0.20f, 0.10f);
+        Vec2 leftUpperArmPos = new Vec2(torsoPos.x - torsoDim.x / 2.0f - upperArmDim.x / 2.0f, torsoPos.y + torsoDim.y
+                / 2.0f - upperArmDim.y / 2.0f);
+        leftUpperArm_ = createLimb(leftUpperArmPos, upperArmDim);
+
+        Vec2 lowerArmDim = new Vec2(0.25f, 0.05f);
+        Vec2 leftLowerArmPos = new Vec2(leftUpperArmPos.x - upperArmDim.x / 2.0f - lowerArmDim.x / 2.0f,
+                leftUpperArmPos.y);
+        leftLowerArm_ = createLimb(leftLowerArmPos, lowerArmDim);
+
+        Vec2 rightUpperArmPos = new Vec2(torsoPos.x + torsoDim.x / 2.0f + upperArmDim.x / 2.0f, torsoPos.y + torsoDim.y
+                / 2.0f - upperArmDim.y / 2.0f);
+        rightUpperArm_ = createLimb(rightUpperArmPos, upperArmDim);
+
+        Vec2 rightLowerArmPos = new Vec2(rightUpperArmPos.x + upperArmDim.x / 2.0f + lowerArmDim.x / 2.0f,
+                rightUpperArmPos.y);
+        rightLowerArm_ = createLimb(rightLowerArmPos, lowerArmDim);
+
         // Joints
         Vec2 torsoLeftThighAnchor = new Vec2(leftThighPos.x, leftThighPos.y + thighDim.y / 2.0f);
         createJoint(torso_, leftThigh_, torsoLeftThighAnchor);
@@ -164,6 +186,18 @@ public class GameState {
 
         Vec2 rightThighLegAnchor = new Vec2(rightThighPos.x, rightThighPos.y - thighDim.y / 2.0f);
         createJoint(rightThigh_, rightLeg_, rightThighLegAnchor);
+
+        Vec2 torsoLeftUpperArmAnchor = new Vec2(leftUpperArmPos.x + upperArmDim.x / 2.0f, leftUpperArmPos.y);
+        createJoint(torso_, leftUpperArm_, torsoLeftUpperArmAnchor);
+
+        Vec2 leftUpperLowerArmAnchor = new Vec2(leftUpperArmPos.x - upperArmDim.x / 2.0f, leftUpperArmPos.y);
+        createJoint(leftUpperArm_, leftLowerArm_, leftUpperLowerArmAnchor);
+
+        Vec2 torsoRightUpperArmAnchor = new Vec2(rightUpperArmPos.x - upperArmDim.x / 2.0f, rightUpperArmPos.y);
+        createJoint(torso_, rightUpperArm_, torsoRightUpperArmAnchor);
+
+        Vec2 rightUpperLowerArmAnchor = new Vec2(rightUpperArmPos.x + upperArmDim.x / 2.0f, rightUpperArmPos.y);
+        createJoint(rightUpperArm_, rightLowerArm_, rightUpperLowerArmAnchor);
     }
 
     private Joint createJoint(Body bodyA, Body bodyB, Vec2 anchor) {
@@ -328,6 +362,22 @@ public class GameState {
 
     public Body getRightLeg() {
         return rightLeg_;
+    }
+
+    public Body getLeftUpperArm() {
+        return leftUpperArm_;
+    }
+
+    public Body getLeftLowerArm() {
+        return leftLowerArm_;
+    }
+
+    public Body getRightUpperArm() {
+        return rightUpperArm_;
+    }
+
+    public Body getRightLowerArm() {
+        return rightLowerArm_;
     }
 
     public float getFps() {

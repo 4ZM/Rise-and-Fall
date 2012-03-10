@@ -41,7 +41,7 @@ class ClimbRenderer extends Renderer {
         resources_ = resources;
     }
 
-    DecimalFormat df = new DecimalFormat("#.##");
+    DecimalFormat df = new DecimalFormat("#.#");
 
     @Override
     protected void draw(Canvas canvas, GameState gameState) {
@@ -70,11 +70,15 @@ class ClimbRenderer extends Renderer {
         drawBody(canvas, gameState, bodyPaint, gameState.getLeftLeg());
         drawBody(canvas, gameState, bodyPaint, gameState.getRightThigh());
         drawBody(canvas, gameState, bodyPaint, gameState.getRightLeg());
+        drawBody(canvas, gameState, bodyPaint, gameState.getLeftUpperArm());
+        drawBody(canvas, gameState, bodyPaint, gameState.getLeftLowerArm());
+        drawBody(canvas, gameState, bodyPaint, gameState.getRightUpperArm());
+        drawBody(canvas, gameState, bodyPaint, gameState.getRightLowerArm());
 
         // Draw text
         Paint textPaint = new Paint();
         textPaint.setARGB(255, 220, 220, 220);
-        canvas.drawText("FPS: " + gameState.getFps(), 10.0f, 10.0f, textPaint);
+        canvas.drawText("FPS: " + df.format(gameState.getFps()), 10.0f, 10.0f, textPaint);
         canvas.drawText("X: " + df.format(gameState.getPos().x) + " Y: " + df.format(gameState.getPos().y), 10.0f,
                 20.0f, textPaint);
     }
