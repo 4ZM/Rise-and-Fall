@@ -27,6 +27,7 @@ import org.jbox2d.dynamics.BodyDef;
 import org.jbox2d.dynamics.BodyType;
 import org.jbox2d.dynamics.FixtureDef;
 import org.jbox2d.dynamics.World;
+import org.jbox2d.dynamics.joints.Joint;
 import org.jbox2d.dynamics.joints.MouseJoint;
 import org.jbox2d.dynamics.joints.MouseJointDef;
 import org.jbox2d.dynamics.joints.RevoluteJointDef;
@@ -63,6 +64,8 @@ public class GameState {
     private Body torso_;
     private Body leftThigh_;
     private Body leftLeg_;
+    private Body rightThigh_;
+    private Body rightLeg_;
 
     /**
      * Create a new default state or restore a saved state.
@@ -72,9 +75,8 @@ public class GameState {
      */
     public GameState(Bundle savedState) {
         isMoving_ = false;
-        worldSize_ = new Vec2(10.0f, 15.0f);
-        // Vec2 gravity = new Vec2(0, -9.8f);
-        Vec2 gravity = new Vec2(0, 0);
+        worldSize_ = new Vec2(5.0f, 8.0f);
+        Vec2 gravity = new Vec2(0, -9.8f);
         world_ = new World(gravity, true);
 
         ground_ = createGround();
@@ -107,7 +109,7 @@ public class GameState {
 
     private Body createDot(Vec2 pos) {
         CircleShape shape = new CircleShape();
-        shape.m_radius = 0.5f;
+        shape.m_radius = 0.3f;
 
         BodyDef bd = new BodyDef();
         bd.type = BodyType.DYNAMIC;
@@ -130,85 +132,66 @@ public class GameState {
 
     private void createClimber() {
 
-        // TODO Split in two?
+        // Create the limbs
         Vec2 torsoDim = new Vec2(0.45f, 0.55f);
         Vec2 torsoPos = new Vec2(0, 0);
-        torso_ = null;
-        {
-            PolygonShape torsoShape = new PolygonShape();
-            torsoShape.setAsBox(torsoDim.x, torsoDim.y);
-
-            BodyDef bd = new BodyDef();
-            bd.type = BodyType.DYNAMIC;
-            bd.position = torsoPos;
-            torso_ = world_.createBody(bd);
-
-            FixtureDef fd = new FixtureDef();
-            fd.shape = torsoShape;
-            fd.density = 1.0f;
-            fd.friction = 0.5f;
-            fd.restitution = 0.5f;
-            fd.filter.categoryBits = 0x2;
-            fd.filter.maskBits = 0x1;
-            torso_.createFixture(fd);
-        }
+        torso_ = createLimb(torsoPos, torsoDim);
 
         Vec2 thighDim = new Vec2(0.20f, 0.45f);
-        Vec2 thighPos = new Vec2(torsoPos.x - torsoDim.x / 2.0f, torsoPos.y - torsoDim.y / 2.0f - thighDim.y / 2.0f);
-        leftThigh_ = null;
-        {
-            PolygonShape leftThighShape = new PolygonShape();
-            leftThighShape.setAsBox(thighDim.x, thighDim.y);
-
-            BodyDef bd = new BodyDef();
-            bd.type = BodyType.DYNAMIC;
-            bd.position = thighPos;
-            leftThigh_ = world_.createBody(bd);
-
-            FixtureDef fd = new FixtureDef();
-            fd.shape = leftThighShape;
-            fd.density = 1.0f;
-            fd.friction = 0.5f;
-            fd.restitution = 0.2f;
-            fd.filter.categoryBits = 0x2;
-            fd.filter.maskBits = 0x1;
-
-            leftThigh_.createFixture(fd);
-        }
+        Vec2 leftThighPos = new Vec2(torsoPos.x - torsoDim.x / 4.0f, torsoPos.y - torsoDim.y / 2.0f - thighDim.y / 2.0f);
+        leftThigh_ = createLimb(leftThighPos, thighDim);
 
         Vec2 legDim = new Vec2(0.15f, 0.50f);
-        Vec2 legPos = new Vec2(thighPos.x, thighPos.y - thighDim.y / 2.0f - legDim.y / 2.0f);
-        leftLeg_ = null;
-        {
-            PolygonShape leftLegShape = new PolygonShape();
-            leftLegShape.setAsBox(legDim.x, legDim.y);
+        Vec2 leftLegPos = new Vec2(leftThighPos.x, leftThighPos.y - thighDim.y / 2.0f - legDim.y / 2.0f);
+        leftLeg_ = createLimb(leftLegPos, legDim);
 
-            BodyDef bd = new BodyDef();
-            bd.type = BodyType.DYNAMIC;
-            bd.position = legPos;
-            leftLeg_ = world_.createBody(bd);
+        Vec2 rightThighPos = new Vec2(torsoPos.x + torsoDim.x / 4.0f, torsoPos.y - torsoDim.y / 2.0f - thighDim.y
+                / 2.0f);
+        rightThigh_ = createLimb(rightThighPos, thighDim);
 
-            FixtureDef fd = new FixtureDef();
-            fd.shape = leftLegShape;
-            fd.density = 1.0f;
-            fd.friction = 0.5f;
-            fd.restitution = 0.5f;
-            fd.filter.categoryBits = 0x2;
-            fd.filter.maskBits = 0x1;
+        Vec2 rightLegPos = new Vec2(rightThighPos.x, rightThighPos.y - thighDim.y / 2.0f - legDim.y / 2.0f);
+        rightLeg_ = createLimb(rightLegPos, legDim);
 
-            leftLeg_.createFixture(fd);
-        }
+        // Joints
+        Vec2 torsoLeftThighAnchor = new Vec2(leftThighPos.x, leftThighPos.y + thighDim.y / 2.0f);
+        createJoint(torso_, leftThigh_, torsoLeftThighAnchor);
 
+        Vec2 leftThighLegAnchor = new Vec2(leftThighPos.x, leftThighPos.y - thighDim.y / 2.0f);
+        createJoint(leftThigh_, leftLeg_, leftThighLegAnchor);
+
+        Vec2 torsoRightThighAnchor = new Vec2(rightThighPos.x, rightThighPos.y + thighDim.y / 2.0f);
+        createJoint(torso_, rightThigh_, torsoRightThighAnchor);
+
+        Vec2 rightThighLegAnchor = new Vec2(rightThighPos.x, rightThighPos.y - thighDim.y / 2.0f);
+        createJoint(rightThigh_, rightLeg_, rightThighLegAnchor);
+    }
+
+    private Joint createJoint(Body bodyA, Body bodyB, Vec2 anchor) {
         RevoluteJointDef jdef = new RevoluteJointDef();
-        Vec2 torsoThighAnchor = new Vec2(thighPos.x, thighPos.y + thighDim.y / 2.0f);
-        jdef.initialize(ground_, leftThigh_, torsoThighAnchor);
-        world_.createJoint(jdef);
+        jdef.initialize(bodyA, bodyB, anchor);
+        return world_.createJoint(jdef);
+    }
+
+    private Body createLimb(Vec2 pos, Vec2 dim) {
+        PolygonShape leftLegShape = new PolygonShape();
+        leftLegShape.setAsBox(dim.x / 2.0f, dim.y / 2.0f);
+
+        BodyDef bd = new BodyDef();
+        bd.type = BodyType.DYNAMIC;
+        bd.position = pos;
+        Body body = world_.createBody(bd);
+
+        FixtureDef fd = new FixtureDef();
+        fd.shape = leftLegShape;
+        fd.density = 1.0f;
         /*
-         * Vec2 leftThighLegAnchor = new Vec2(thighPos.x, thighPos.y -
-         * thighDim.y / 2.0f); jdef = new RevoluteJointDef();
-         * jdef.initialize(leftThigh_, leftLeg_, leftThighLegAnchor);
-         * world_.createJoint(jdef);
+         * fd.friction = 0.5f; fd.restitution = 0.5f;
          */
+        fd.filter.categoryBits = 0x2;
+        fd.filter.maskBits = 0x1;
+
+        body.createFixture(fd);
+        return body;
     }
 
     private Body createGround() {
@@ -337,6 +320,14 @@ public class GameState {
 
     public Body getLeftLeg() {
         return leftLeg_;
+    }
+
+    public Body getRightThigh() {
+        return rightThigh_;
+    }
+
+    public Body getRightLeg() {
+        return rightLeg_;
     }
 
     public float getFps() {
