@@ -48,42 +48,41 @@ class ClimbRenderer extends Renderer {
     protected void draw(Canvas canvas, GameState gameState) {
         canvas.drawColor(Color.BLACK);
 
+        Climber climber = gameState.getClimber();
+
         Paint paint = new Paint();
         paint.setARGB(255, 255, 0, 0);
-        drawBody(canvas, gameState, paint, gameState.getTorso());
+        drawBody(canvas, gameState, paint, climber.getTorso());
 
         paint.setARGB(255, 0, 255, 0);
-        drawBody(canvas, gameState, paint, gameState.getLeftThigh());
-        drawBody(canvas, gameState, paint, gameState.getLeftLeg());
+        drawBody(canvas, gameState, paint, climber.getLeftThigh());
+        drawBody(canvas, gameState, paint, climber.getLeftLeg());
 
         paint.setARGB(255, 0, 0, 255);
-        drawBody(canvas, gameState, paint, gameState.getRightThigh());
-        drawBody(canvas, gameState, paint, gameState.getRightLeg());
+        drawBody(canvas, gameState, paint, climber.getRightThigh());
+        drawBody(canvas, gameState, paint, climber.getRightLeg());
 
         paint.setARGB(255, 255, 128, 0);
-        drawBody(canvas, gameState, paint, gameState.getLeftUpperArm());
-        drawBody(canvas, gameState, paint, gameState.getLeftLowerArm());
+        drawBody(canvas, gameState, paint, climber.getLeftUpperArm());
+        drawBody(canvas, gameState, paint, climber.getLeftLowerArm());
 
         paint.setARGB(255, 255, 0, 255);
-        drawBody(canvas, gameState, paint, gameState.getRightUpperArm());
-        drawBody(canvas, gameState, paint, gameState.getRightLowerArm());
+        drawBody(canvas, gameState, paint, climber.getRightUpperArm());
+        drawBody(canvas, gameState, paint, climber.getRightLowerArm());
 
         if (gameState.isMoving())
             paint.setARGB(255, 200, 40, 200);
         else
             paint.setARGB(255, 200, 40, 100);
 
-        drawBody(canvas, gameState, paint, gameState.getLeftHand());
-        drawBody(canvas, gameState, paint, gameState.getRightHand());
+        drawBody(canvas, gameState, paint, climber.getLeftHand());
+        drawBody(canvas, gameState, paint, climber.getRightHand());
 
         // Draw text
         Paint textPaint = new Paint();
         textPaint.setARGB(255, 220, 220, 220);
         canvas.drawText("FPS: " + df.format(gameState.getFps()), 10.0f, 10.0f, textPaint);
-        /*
-         * canvas.drawText("X: " + df.format(gameState.getPos().x) + " Y: " +
-         * df.format(gameState.getPos().y), 10.0f, 20.0f, textPaint);
-         */}
+    }
 
     private void drawBody(Canvas canvas, GameState gameState, Paint paint, Body body) {
 
