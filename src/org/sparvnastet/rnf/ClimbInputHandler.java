@@ -37,11 +37,7 @@ public class ClimbInputHandler extends InputHandler {
 
             switch (event.getAction()) {
             case MotionEvent.ACTION_DOWN: {
-                float dx = Math.abs(gameState.getPos().x - p.x);
-                float dy = Math.abs(gameState.getPos().y - p.y);
-                if (dx < 1.5f && dy < 1.5f) {
-                    gameState.startMove(p);
-                }
+                gameState.startMove(p);
                 break;
             }
             case MotionEvent.ACTION_MOVE: {

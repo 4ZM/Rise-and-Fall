@@ -19,7 +19,6 @@
 
 package org.sparvnastet.rnf;
 
-import org.jbox2d.collision.shapes.CircleShape;
 import org.jbox2d.collision.shapes.PolygonShape;
 import org.jbox2d.common.Vec2;
 import org.jbox2d.dynamics.Body;
@@ -57,7 +56,6 @@ public class GameState {
 
     public World world_;
     private Body ground_;
-    private Body dot_;
     private MouseJoint mj_;
     private MouseJointDef mjd_;
 
@@ -70,6 +68,8 @@ public class GameState {
     private Body leftLowerArm_;
     private Body rightUpperArm_;
     private Body rightLowerArm_;
+    private Body leftHand_;
+    private Body rightHand_;
 
     /**
      * Create a new default state or restore a saved state.
@@ -79,7 +79,7 @@ public class GameState {
      */
     public GameState(Bundle savedState) {
         isMoving_ = false;
-        worldSize_ = new Vec2(5.0f, 8.0f);
+        worldSize_ = new Vec2(4.80f, 8.0f);
         Vec2 gravity = new Vec2(0, -9.8f);
         world_ = new World(gravity, true);
 
@@ -88,7 +88,7 @@ public class GameState {
         mjd_ = new MouseJointDef();
         mjd_.bodyA = ground_;
         mjd_.target.setZero();
-        mjd_.maxForce = 3000.0f;
+        mjd_.maxForce = 5000.0f;
 
         if (savedState == null) {
             initialize();
@@ -106,32 +106,7 @@ public class GameState {
         windowSize_ = new Vec2(worldSize_.x, worldSize_.y);
         windowPos_ = new Vec2(0.0f, 0.0f);
 
-        // Create the dot circle
-        dot_ = createDot(new Vec2(0, 3.0f));
         createClimber();
-    }
-
-    private Body createDot(Vec2 pos) {
-        CircleShape shape = new CircleShape();
-        shape.m_radius = 0.3f;
-
-        BodyDef bd = new BodyDef();
-        bd.type = BodyType.DYNAMIC;
-        bd.position.set(pos);
-        Body dot = world_.createBody(bd);
-        dot.setBullet(true);
-
-        FixtureDef fd = new FixtureDef();
-        fd.shape = shape;
-        fd.density = 1.0f;
-        fd.friction = 0.5f;
-        fd.restitution = 0.5f;
-        fd.filter.categoryBits = 0x1;
-        fd.filter.maskBits = 0x3;
-
-        dot.createFixture(fd);
-
-        return dot;
     }
 
     private void createClimber() {
@@ -166,6 +141,10 @@ public class GameState {
                 leftUpperArmPos.y);
         leftLowerArm_ = createLimb(leftLowerArmPos, lowerArmDim);
 
+        Vec2 handDim = new Vec2(0.1f, 0.1f);
+        Vec2 leftHandPos = new Vec2(leftLowerArmPos.x - lowerArmDim.x / 2.0f - handDim.x / 2.0f, leftLowerArmPos.y);
+        leftHand_ = createLimb(leftHandPos, handDim);
+
         Vec2 rightUpperArmPos = new Vec2(torsoPos.x + torsoDim.x / 2.0f + upperArmDim.x / 2.0f, torsoPos.y + torsoDim.y
                 / 2.0f - upperArmDim.y / 2.0f);
         rightUpperArm_ = createLimb(rightUpperArmPos, upperArmDim);
@@ -173,6 +152,9 @@ public class GameState {
         Vec2 rightLowerArmPos = new Vec2(rightUpperArmPos.x + upperArmDim.x / 2.0f + lowerArmDim.x / 2.0f,
                 rightUpperArmPos.y);
         rightLowerArm_ = createLimb(rightLowerArmPos, lowerArmDim);
+
+        Vec2 rightHandPos = new Vec2(rightLowerArmPos.x + lowerArmDim.x / 2.0f + handDim.x / 2.0f, rightLowerArmPos.y);
+        rightHand_ = createLimb(rightHandPos, handDim);
 
         // Joints
         Vec2 torsoLeftThighAnchor = new Vec2(leftThighPos.x, leftThighPos.y + thighDim.y / 2.0f);
@@ -193,22 +175,33 @@ public class GameState {
         Vec2 leftUpperLowerArmAnchor = new Vec2(leftUpperArmPos.x - upperArmDim.x / 2.0f, leftUpperArmPos.y);
         createJoint(leftUpperArm_, leftLowerArm_, leftUpperLowerArmAnchor);
 
+        Vec2 leftArmHandAnchor = new Vec2(leftLowerArmPos.x - lowerArmDim.x / 2.0f, leftLowerArmPos.y);
+        createJoint(leftLowerArm_, leftHand_, leftArmHandAnchor);
+
         Vec2 torsoRightUpperArmAnchor = new Vec2(rightUpperArmPos.x - upperArmDim.x / 2.0f, rightUpperArmPos.y);
         createJoint(torso_, rightUpperArm_, torsoRightUpperArmAnchor);
 
         Vec2 rightUpperLowerArmAnchor = new Vec2(rightUpperArmPos.x + upperArmDim.x / 2.0f, rightUpperArmPos.y);
         createJoint(rightUpperArm_, rightLowerArm_, rightUpperLowerArmAnchor);
+
+        Vec2 rightArmHandAnchor = new Vec2(rightLowerArmPos.x + lowerArmDim.x / 2.0f, rightLowerArmPos.y);
+        createJoint(rightLowerArm_, rightHand_, rightArmHandAnchor);
+
+        createJoint(ground_, rightHand_, rightHandPos);
     }
 
     private Joint createJoint(Body bodyA, Body bodyB, Vec2 anchor) {
         RevoluteJointDef jdef = new RevoluteJointDef();
+        jdef.motorSpeed = 0.0f;
+        jdef.maxMotorTorque = 0.05f;
+        jdef.enableMotor = true;
         jdef.initialize(bodyA, bodyB, anchor);
         return world_.createJoint(jdef);
     }
 
     private Body createLimb(Vec2 pos, Vec2 dim) {
-        PolygonShape leftLegShape = new PolygonShape();
-        leftLegShape.setAsBox(dim.x / 2.0f, dim.y / 2.0f);
+        PolygonShape shape = new PolygonShape();
+        shape.setAsBox(dim.x / 2.0f, dim.y / 2.0f);
 
         BodyDef bd = new BodyDef();
         bd.type = BodyType.DYNAMIC;
@@ -216,11 +209,8 @@ public class GameState {
         Body body = world_.createBody(bd);
 
         FixtureDef fd = new FixtureDef();
-        fd.shape = leftLegShape;
+        fd.shape = shape;
         fd.density = 1.0f;
-        /*
-         * fd.friction = 0.5f; fd.restitution = 0.5f;
-         */
         fd.filter.categoryBits = 0x2;
         fd.filter.maskBits = 0x1;
 
@@ -265,8 +255,6 @@ public class GameState {
     public void save(Bundle outState) {
         outState.putSerializable("GameState::state_", state_);
 
-        outState.putFloat("GameState::pos_.x", dot_.m_xf.position.x);
-        outState.putFloat("GameState::pos_.y", dot_.m_xf.position.y);
         outState.putFloat("GameState::windowSize_.x", windowSize_.x);
         outState.putFloat("GameState::windowSize_.y", windowSize_.y);
         outState.putFloat("GameState::windowPos_.x", windowPos_.x);
@@ -288,7 +276,6 @@ public class GameState {
         windowPos_ = new Vec2(savedState.getFloat("GameState::windowPos_.x"),
                 savedState.getFloat("GameState::windowPos_.y"));
 
-        dot_ = createDot(new Vec2(savedState.getFloat("GameState::pos_.x"), savedState.getFloat("GameState::pos_.y")));
     }
 
     /**
@@ -318,11 +305,14 @@ public class GameState {
     }
 
     public void startMove(Vec2 pos) {
-        isMoving_ = true;
-        mjd_.bodyB = dot_;
-        mjd_.target.set(pos);
-        mj_ = (MouseJoint) world_.createJoint(mjd_);
-        dot_.setAwake(true);
+        // Find anchor point
+        if (pos.subLocal(leftHand_.getPosition()).length() < 0.5f) {
+            isMoving_ = true;
+            mjd_.bodyB = leftHand_;
+            mjd_.target.set(pos);
+            mj_ = (MouseJoint) world_.createJoint(mjd_);
+            torso_.setAwake(true);
+        }
     }
 
     public void stopMove() {
@@ -337,11 +327,7 @@ public class GameState {
 
     public void setPos(Vec2 pos) {
         mj_.setTarget(pos);
-        dot_.setAwake(true);
-    }
-
-    public Vec2 getPos() {
-        return dot_.m_xf.position;
+        torso_.setAwake(true);
     }
 
     public Body getTorso() {
@@ -372,12 +358,20 @@ public class GameState {
         return leftLowerArm_;
     }
 
+    public Body getLeftHand() {
+        return leftHand_;
+    }
+
     public Body getRightUpperArm() {
         return rightUpperArm_;
     }
 
     public Body getRightLowerArm() {
         return rightLowerArm_;
+    }
+
+    public Body getRightHand() {
+        return rightHand_;
     }
 
     public float getFps() {

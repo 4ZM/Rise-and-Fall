@@ -24,6 +24,7 @@ import java.text.DecimalFormat;
 import org.jbox2d.collision.shapes.PolygonShape;
 import org.jbox2d.common.Vec2;
 import org.jbox2d.dynamics.Body;
+import org.jbox2d.dynamics.Fixture;
 
 import android.content.res.Resources;
 import android.graphics.Canvas;
@@ -47,44 +48,47 @@ class ClimbRenderer extends Renderer {
     protected void draw(Canvas canvas, GameState gameState) {
         canvas.drawColor(Color.BLACK);
 
-        Vec2 p = toScreenCoords(gameState, gameState.getPos());
+        Paint paint = new Paint();
+        paint.setARGB(255, 255, 0, 0);
+        drawBody(canvas, gameState, paint, gameState.getTorso());
 
-        Paint circlePaint = new Paint();
-        if (gameState.isMoving()) {
-            circlePaint.setARGB(255, 200, 40, 40);
-            canvas.drawCircle(p.x, p.y, 40, circlePaint);
-            circlePaint.setARGB(255, 0, 0, 0);
-            canvas.drawCircle(p.x, p.y, 36, circlePaint);
-        }
+        paint.setARGB(255, 0, 255, 0);
+        drawBody(canvas, gameState, paint, gameState.getLeftThigh());
+        drawBody(canvas, gameState, paint, gameState.getLeftLeg());
 
-        circlePaint.setARGB(255, 200, 40, 40);
-        canvas.drawCircle(p.x, p.y, screenScale(gameState).x * 0.3f + 4, circlePaint);
-        circlePaint.setARGB(255, 0, 0, 0);
-        canvas.drawCircle(p.x, p.y, screenScale(gameState).x * 0.3f, circlePaint);
+        paint.setARGB(255, 0, 0, 255);
+        drawBody(canvas, gameState, paint, gameState.getRightThigh());
+        drawBody(canvas, gameState, paint, gameState.getRightLeg());
 
-        Paint bodyPaint = new Paint();
-        bodyPaint.setARGB(255, 200, 40, 40);
+        paint.setARGB(255, 255, 128, 0);
+        drawBody(canvas, gameState, paint, gameState.getLeftUpperArm());
+        drawBody(canvas, gameState, paint, gameState.getLeftLowerArm());
 
-        drawBody(canvas, gameState, bodyPaint, gameState.getTorso());
-        drawBody(canvas, gameState, bodyPaint, gameState.getLeftThigh());
-        drawBody(canvas, gameState, bodyPaint, gameState.getLeftLeg());
-        drawBody(canvas, gameState, bodyPaint, gameState.getRightThigh());
-        drawBody(canvas, gameState, bodyPaint, gameState.getRightLeg());
-        drawBody(canvas, gameState, bodyPaint, gameState.getLeftUpperArm());
-        drawBody(canvas, gameState, bodyPaint, gameState.getLeftLowerArm());
-        drawBody(canvas, gameState, bodyPaint, gameState.getRightUpperArm());
-        drawBody(canvas, gameState, bodyPaint, gameState.getRightLowerArm());
+        paint.setARGB(255, 255, 0, 255);
+        drawBody(canvas, gameState, paint, gameState.getRightUpperArm());
+        drawBody(canvas, gameState, paint, gameState.getRightLowerArm());
+
+        if (gameState.isMoving())
+            paint.setARGB(255, 200, 40, 200);
+        else
+            paint.setARGB(255, 200, 40, 100);
+
+        drawBody(canvas, gameState, paint, gameState.getLeftHand());
+        drawBody(canvas, gameState, paint, gameState.getRightHand());
 
         // Draw text
         Paint textPaint = new Paint();
         textPaint.setARGB(255, 220, 220, 220);
         canvas.drawText("FPS: " + df.format(gameState.getFps()), 10.0f, 10.0f, textPaint);
-        canvas.drawText("X: " + df.format(gameState.getPos().x) + " Y: " + df.format(gameState.getPos().y), 10.0f,
-                20.0f, textPaint);
-    }
+        /*
+         * canvas.drawText("X: " + df.format(gameState.getPos().x) + " Y: " +
+         * df.format(gameState.getPos().y), 10.0f, 20.0f, textPaint);
+         */}
 
     private void drawBody(Canvas canvas, GameState gameState, Paint paint, Body body) {
-        PolygonShape s = (PolygonShape) body.getFixtureList().m_shape;
+
+        Fixture f = body.getFixtureList();
+        PolygonShape s = (PolygonShape) f.m_shape;
 
         Path path = new Path();
         Vec2 vertex = s.getVertex(0);
@@ -98,13 +102,14 @@ class ClimbRenderer extends Renderer {
         vertex = s.getVertex(0);
         path.lineTo(vertex.x, vertex.y);
 
-        Vec2 torsoPos = toScreenCoords(gameState, body.getPosition());
+        Vec2 bodyPos = toScreenCoords(gameState, body.getPosition());
 
         canvas.save(Canvas.MATRIX_SAVE_FLAG);
-        canvas.translate(torsoPos.x, torsoPos.y);
+        canvas.translate(bodyPos.x, bodyPos.y);
         canvas.scale(screenScale(gameState).x, screenScale(gameState).y);
         canvas.rotate(body.getAngle() / (2.0f * 3.14159f) * 360.0f);
         canvas.drawPath(path, paint);
         canvas.restore();
+
     }
 }
