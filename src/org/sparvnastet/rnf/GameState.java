@@ -19,6 +19,8 @@
 
 package org.sparvnastet.rnf;
 
+import java.util.ArrayList;
+
 import org.jbox2d.collision.shapes.PolygonShape;
 import org.jbox2d.common.Vec2;
 import org.jbox2d.dynamics.Body;
@@ -44,8 +46,6 @@ public class GameState {
 
     private State state_;
 
-    private boolean isMoving_;
-
     private float fps_;
 
     private Vec2 worldSize_;
@@ -54,11 +54,15 @@ public class GameState {
 
     public World world_;
     private Body ground_;
+
     private MouseJoint mj_;
     private MouseJointDef mjd_;
 
+    // Represents grips on the wall.. to be replaced by a bitmap
     public Vec2 leftGrip_;
     public Vec2 rightGrip_;
+
+    public ArrayList<Joint> grips_ = new ArrayList<Joint>();
 
     private Climber climber_;
 
@@ -69,7 +73,6 @@ public class GameState {
      *            optional saved state, or null to create a new default state.
      */
     public GameState(Bundle savedState) {
-        isMoving_ = false;
         worldSize_ = new Vec2(4.80f, 8.0f);
         Vec2 gravity = new Vec2(0, -9.8f);
         world_ = new World(gravity, true);
@@ -92,11 +95,8 @@ public class GameState {
         leftGrip_ = new Vec2(climber_.getLeftHandPos().x + 0.1f, climber_.getLeftHandPos().y);
         rightGrip_ = new Vec2(climber_.getRightHandPos().x - 0.1f, climber_.getRightHandPos().y - 0.1f);
 
-        climber_.setRightHandPos(rightGrip_);
-        createGripJoint(climber_.getRightHand(), rightGrip_);
-
         climber_.setLeftHandPos(leftGrip_);
-        createGripJoint(climber_.getLeftHand(), leftGrip_);
+        grips_.add(createGripJoint(climber_.getLeftHand(), leftGrip_));
     }
 
     private Joint createGripJoint(Body body, Vec2 anchor) {
@@ -113,7 +113,6 @@ public class GameState {
      */
     private void initialize() {
         state_ = State.READY;
-        isMoving_ = false;
         windowSize_ = new Vec2(worldSize_.x, worldSize_.y);
         windowPos_ = new Vec2(0.0f, 0.0f);
     }
@@ -209,29 +208,63 @@ public class GameState {
     }
 
     public void startMove(Vec2 pos) {
-        // Find anchor point
-        if (pos.subLocal(climber_.getLeftHand().getPosition()).length() < 0.5f) {
-            isMoving_ = true;
-            mjd_.bodyB = climber_.getLeftHand();
-            mjd_.target.set(pos);
-            mj_ = (MouseJoint) world_.createJoint(mjd_);
-            climber_.getLeftHand().setAwake(true);
+        assert (mj_ == null);
+
+        Body closestGripper = climber_.getClosestGripper(pos);
+
+        // Attach the gripper to a mouse joint
+        mjd_.bodyB = closestGripper;
+        mjd_.target.set(pos);
+        mj_ = (MouseJoint) world_.createJoint(mjd_);
+
+        // If its connected to ground, release it
+        Joint toRemove = null;
+        for (Joint j : grips_) {
+            if (j.getBodyB() == closestGripper) {
+                toRemove = j;
+                break;
+            }
         }
+        if (toRemove != null) {
+            world_.destroyJoint(toRemove);
+            grips_.remove(toRemove);
+        }
+
+        closestGripper.setAwake(true);
     }
 
     public void stopMove() {
-        isMoving_ = false;
+        assert (mj_ != null);
+
+        // If it is close to a grip, attach it
+        Body gripper = mj_.getBodyB();
+
+        if (gripper.getPosition().sub(leftGrip_).lengthSquared() < 0.25) {
+            gripper.getPosition().set(leftGrip_);
+            grips_.add(createGripJoint(gripper, leftGrip_));
+        } else if (gripper.getPosition().sub(rightGrip_).lengthSquared() < 0.25) {
+            gripper.getPosition().set(rightGrip_);
+            grips_.add(createGripJoint(gripper, rightGrip_));
+        }
+
+        // Release the mouse joint
         world_.destroyJoint(mj_);
         mj_ = null;
     }
 
     public boolean isMoving() {
-        return isMoving_;
+        return mj_ != null;
+    }
+
+    public Body getMovingGripper() {
+        if (mj_ == null)
+            return null;
+        return mj_.getBodyB();
     }
 
     public void setPos(Vec2 pos) {
         mj_.setTarget(pos);
-        climber_.getLeftHand().setAwake(true);
+        mj_.getBodyB().setAwake(true);
     }
 
     public float getFps() {

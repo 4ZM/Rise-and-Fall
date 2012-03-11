@@ -255,4 +255,14 @@ public class Climber {
         rightHand_.m_xf.position.set(pos);
     }
 
+    /**
+     * Get the gripper (hand|foot) closest to the specified point
+     */
+    public Body getClosestGripper(Vec2 pos) {
+        float lhd = pos.sub(leftHand_.getPosition()).lengthSquared();
+        float rhd = pos.sub(rightHand_.getPosition()).lengthSquared();
+
+        Body closestHand = lhd < rhd ? leftHand_ : rightHand_;
+        return closestHand;
+    }
 }

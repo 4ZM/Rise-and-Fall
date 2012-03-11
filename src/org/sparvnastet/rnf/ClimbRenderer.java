@@ -48,9 +48,15 @@ class ClimbRenderer extends Renderer {
     protected void draw(Canvas canvas, GameState gameState) {
         canvas.drawColor(Color.BLACK);
 
+        Paint paint = new Paint();
+        paint.setARGB(255, 250, 90, 90);
+        canvas.drawCircle(toScreenCoords(gameState, gameState.leftGrip_).x,
+                toScreenCoords(gameState, gameState.leftGrip_).y, 5, paint);
+        canvas.drawCircle(toScreenCoords(gameState, gameState.rightGrip_).x,
+                toScreenCoords(gameState, gameState.rightGrip_).y, 5, paint);
+
         Climber climber = gameState.getClimber();
 
-        Paint paint = new Paint();
         paint.setARGB(255, 255, 0, 0);
         drawBody(canvas, gameState, paint, climber.getTorso());
 
@@ -70,12 +76,19 @@ class ClimbRenderer extends Renderer {
         drawBody(canvas, gameState, paint, climber.getRightUpperArm());
         drawBody(canvas, gameState, paint, climber.getRightLowerArm());
 
-        if (gameState.isMoving())
-            paint.setARGB(255, 200, 40, 200);
+        Body lh = climber.getLeftHand();
+        Body rh = climber.getRightHand();
+
+        if (gameState.getMovingGripper() == lh)
+            paint.setARGB(255, 200, 100, 200);
         else
             paint.setARGB(255, 200, 40, 100);
-
         drawBody(canvas, gameState, paint, climber.getLeftHand());
+
+        if (gameState.getMovingGripper() == rh)
+            paint.setARGB(255, 200, 100, 200);
+        else
+            paint.setARGB(255, 200, 40, 100);
         drawBody(canvas, gameState, paint, climber.getRightHand());
 
         // Draw text
