@@ -58,9 +58,7 @@ public class GameState {
     private MouseJoint mj_;
     private MouseJointDef mjd_;
 
-    // Represents grips on the wall.. to be replaced by a bitmap
-    public Vec2 leftGrip_;
-    public Vec2 rightGrip_;
+    private GripsMap gripsMap_;
 
     public ArrayList<Joint> grips_ = new ArrayList<Joint>();
 
@@ -72,8 +70,10 @@ public class GameState {
      * @param savedState
      *            optional saved state, or null to create a new default state.
      */
-    public GameState(Bundle savedState) {
-        worldSize_ = new Vec2(4.80f, 8.0f);
+    public GameState(GripsMap gripsMap, Bundle savedState) {
+        gripsMap_ = gripsMap;
+
+        worldSize_ = new Vec2(3.0f, 5.0f);
         Vec2 gravity = new Vec2(0, -9.8f);
         world_ = new World(gravity, true);
 
@@ -91,12 +91,7 @@ public class GameState {
         }
 
         climber_ = new Climber(world_, savedState);
-
-        leftGrip_ = new Vec2(climber_.getLeftHandPos().x + 0.1f, climber_.getLeftHandPos().y);
-        rightGrip_ = new Vec2(climber_.getRightHandPos().x - 0.1f, climber_.getRightHandPos().y - 0.1f);
-
-        climber_.setLeftHandPos(leftGrip_);
-        grips_.add(createGripJoint(climber_.getLeftHand(), leftGrip_));
+        grips_.add(createGripJoint(climber_.getLeftHand(), climber_.getLeftHand().getPosition()));
     }
 
     private Joint createGripJoint(Body body, Vec2 anchor) {
@@ -239,13 +234,16 @@ public class GameState {
         // If it is close to a grip, attach it
         Body gripper = mj_.getBodyB();
 
-        if (gripper.getPosition().sub(leftGrip_).lengthSquared() < 0.25) {
-            gripper.getPosition().set(leftGrip_);
-            grips_.add(createGripJoint(gripper, leftGrip_));
-        } else if (gripper.getPosition().sub(rightGrip_).lengthSquared() < 0.25) {
-            gripper.getPosition().set(rightGrip_);
-            grips_.add(createGripJoint(gripper, rightGrip_));
-        }
+        float xs = (float) gripsMap_.getWidth() / windowSize_.x;
+        float ys = -(float) gripsMap_.getHeight() / windowSize_.y;
+        float xo = gripsMap_.getWidth() / 2.0f;
+        float yo = gripsMap_.getHeight() / 2.0f;
+
+        Vec2 p = worldToWindow(gripper.getPosition());
+        p = new Vec2(p.x * xs + xo, p.y * ys + yo);
+
+        if (gripsMap_.isGrip((int) p.x, (int) p.y))
+            grips_.add(createGripJoint(gripper, gripper.getPosition()));
 
         // Release the mouse joint
         world_.destroyJoint(mj_);

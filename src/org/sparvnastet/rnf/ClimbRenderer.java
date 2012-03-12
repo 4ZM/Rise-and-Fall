@@ -27,8 +27,11 @@ import org.jbox2d.dynamics.Body;
 import org.jbox2d.dynamics.Fixture;
 
 import android.content.res.Resources;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Color;
+import android.graphics.Matrix;
 import android.graphics.Paint;
 import android.graphics.Path;
 
@@ -37,9 +40,13 @@ import android.graphics.Path;
  */
 class ClimbRenderer extends Renderer {
     private Resources resources_;
+    private Bitmap wallTexture;
 
     public ClimbRenderer(Resources resources) {
         resources_ = resources;
+        BitmapFactory.Options bfo = new BitmapFactory.Options();
+        bfo.inScaled = false;
+        wallTexture = BitmapFactory.decodeResource(resources_, R.drawable.wall, bfo);
     }
 
     DecimalFormat df = new DecimalFormat("#.#");
@@ -47,13 +54,9 @@ class ClimbRenderer extends Renderer {
     @Override
     protected void draw(Canvas canvas, GameState gameState) {
         canvas.drawColor(Color.BLACK);
+        canvas.drawBitmap(wallTexture, new Matrix(), null);
 
         Paint paint = new Paint();
-        paint.setARGB(255, 250, 90, 90);
-        canvas.drawCircle(toScreenCoords(gameState, gameState.leftGrip_).x,
-                toScreenCoords(gameState, gameState.leftGrip_).y, 5, paint);
-        canvas.drawCircle(toScreenCoords(gameState, gameState.rightGrip_).x,
-                toScreenCoords(gameState, gameState.rightGrip_).y, 5, paint);
 
         Climber climber = gameState.getClimber();
 

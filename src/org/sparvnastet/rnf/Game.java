@@ -22,6 +22,8 @@ package org.sparvnastet.rnf;
 import org.sparvnastet.rnf.GameState.State;
 
 import android.content.res.Resources;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.os.Bundle;
 
 /**
@@ -37,7 +39,11 @@ public class Game implements IGameCtrl {
     private IGameRunner gameRunner_;
 
     public Game(Resources resources, Bundle savedState) {
-        gameState_ = new GameState(savedState);
+
+        BitmapFactory.Options bfo = new BitmapFactory.Options();
+        bfo.inScaled = false;
+        Bitmap gripsBitmap = BitmapFactory.decodeResource(resources, R.drawable.grips, bfo);
+        gameState_ = new GameState(new GripsMap(gripsBitmap), savedState);
         inputHandler_ = new ClimbInputHandler();
         renderer_ = new ClimbRenderer(resources);
         physicsSimulator_ = new PhysicsSimulator();
