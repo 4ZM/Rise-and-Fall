@@ -81,18 +81,33 @@ class ClimbRenderer extends Renderer {
 
         Body lh = climber.getLeftHand();
         Body rh = climber.getRightHand();
+        Body lf = climber.getLeftFoot();
+        Body rf = climber.getRightFoot();
 
-        if (gameState.getMovingGripper() == lh)
+        Body movingGripper = gameState.getMovingGripper();
+        if (movingGripper == lh)
             paint.setARGB(255, 200, 100, 200);
         else
             paint.setARGB(255, 200, 40, 100);
-        drawBody(canvas, gameState, paint, climber.getLeftHand());
+        drawBody(canvas, gameState, paint, lh);
 
-        if (gameState.getMovingGripper() == rh)
+        if (movingGripper == rh)
             paint.setARGB(255, 200, 100, 200);
         else
             paint.setARGB(255, 200, 40, 100);
-        drawBody(canvas, gameState, paint, climber.getRightHand());
+        drawBody(canvas, gameState, paint, rh);
+
+        if (movingGripper == lf)
+            paint.setARGB(255, 200, 100, 200);
+        else
+            paint.setARGB(255, 200, 40, 100);
+        drawBody(canvas, gameState, paint, lf);
+
+        if (movingGripper == rf)
+            paint.setARGB(255, 200, 100, 200);
+        else
+            paint.setARGB(255, 200, 40, 100);
+        drawBody(canvas, gameState, paint, rf);
 
         // Draw text
         Paint textPaint = new Paint();

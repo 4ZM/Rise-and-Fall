@@ -50,6 +50,8 @@ public class Climber {
     private Body rightLowerArm_;
     private Body leftHand_;
     private Body rightHand_;
+    private Body leftFoot_;
+    private Body rightFoot_;
 
     private static final Vec2 TORSO_DIM = new Vec2(0.45f, 0.55f);
     private static final Vec2 THIGH_DIM = new Vec2(0.20f, 0.45f);
@@ -57,6 +59,7 @@ public class Climber {
     private static final Vec2 UPPER_ARM_DIM = new Vec2(0.20f, 0.10f);
     private static final Vec2 LOWER_ARM_DIM = new Vec2(0.25f, 0.05f);
     private static final Vec2 HAND_DIM = new Vec2(0.1f, 0.1f);
+    private static final Vec2 FOOT_DIM = new Vec2(0.1f, 0.1f);
 
     /**
      * Create a new default state or restore a saved state.
@@ -88,12 +91,18 @@ public class Climber {
         Vec2 leftLegPos = new Vec2(leftThighPos.x, leftThighPos.y - THIGH_DIM.y / 2.0f - LEG_DIM.y / 2.0f);
         leftLeg_ = createLimb(leftLegPos, LEG_DIM);
 
+        Vec2 leftFootPos = new Vec2(leftLegPos.x, leftLegPos.y - LEG_DIM.y / 2.0f - FOOT_DIM.y / 2.0f);
+        leftFoot_ = createLimb(leftFootPos, FOOT_DIM);
+
         Vec2 rightThighPos = new Vec2(torsoPos.x + TORSO_DIM.x / 4.0f, torsoPos.y - TORSO_DIM.y / 2.0f - THIGH_DIM.y
                 / 2.0f);
         rightThigh_ = createLimb(rightThighPos, THIGH_DIM);
 
         Vec2 rightLegPos = new Vec2(rightThighPos.x, rightThighPos.y - THIGH_DIM.y / 2.0f - LEG_DIM.y / 2.0f);
         rightLeg_ = createLimb(rightLegPos, LEG_DIM);
+
+        Vec2 rightFootPos = new Vec2(rightLegPos.x, rightLegPos.y - LEG_DIM.y / 2.0f - FOOT_DIM.y / 2.0f);
+        rightFoot_ = createLimb(rightFootPos, FOOT_DIM);
 
         Vec2 leftUpperArmPos = new Vec2(torsoPos.x - TORSO_DIM.x / 2.0f - UPPER_ARM_DIM.x / 2.0f, torsoPos.y
                 + TORSO_DIM.y / 2.0f - UPPER_ARM_DIM.y / 2.0f);
@@ -123,13 +132,19 @@ public class Climber {
         createJoint(torso_, leftThigh_, torsoLeftThighAnchor);
 
         Vec2 leftThighLegAnchor = new Vec2(leftThighPos.x, leftThighPos.y - THIGH_DIM.y / 2.0f);
-        createJoint(leftThigh_, leftLeg_, leftThighLegAnchor);
+        createJoint(leftThigh_, leftLeg_, leftThighLegAnchor, 0.1f, 0.01f, 3.14f);
+
+        Vec2 leftLegFootAnchor = new Vec2(leftLegPos.x, leftLegPos.y - LEG_DIM.y / 2.0f);
+        createJoint(leftLeg_, leftFoot_, leftLegFootAnchor);
 
         Vec2 torsoRightThighAnchor = new Vec2(rightThighPos.x, rightThighPos.y + THIGH_DIM.y / 2.0f);
         createJoint(torso_, rightThigh_, torsoRightThighAnchor);
 
         Vec2 rightThighLegAnchor = new Vec2(rightThighPos.x, rightThighPos.y - THIGH_DIM.y / 2.0f);
-        createJoint(rightThigh_, rightLeg_, rightThighLegAnchor);
+        createJoint(rightThigh_, rightLeg_, rightThighLegAnchor, -0.1f, -3.14f, -0.01f);
+
+        Vec2 rightLegFootAnchor = new Vec2(rightLegPos.x, rightLegPos.y - LEG_DIM.y / 2.0f);
+        createJoint(rightLeg_, rightFoot_, rightLegFootAnchor);
 
         Vec2 torsoLeftUpperArmAnchor = new Vec2(leftUpperArmPos.x + UPPER_ARM_DIM.x / 2.0f, leftUpperArmPos.y);
         createJoint(torso_, leftUpperArm_, torsoLeftUpperArmAnchor);
@@ -148,6 +163,18 @@ public class Climber {
 
         Vec2 rightArmHandAnchor = new Vec2(rightLowerArmPos.x + LOWER_ARM_DIM.x / 2.0f, rightLowerArmPos.y);
         createJoint(rightLowerArm_, rightHand_, rightArmHandAnchor);
+    }
+
+    private Joint createJoint(Body bodyA, Body bodyB, Vec2 anchor, float motorTorque, float lowerAngle, float upperAngle) {
+        RevoluteJointDef jdef = new RevoluteJointDef();
+        jdef.motorSpeed = 0.0f;
+        jdef.maxMotorTorque = motorTorque;
+        jdef.enableMotor = true;
+        jdef.enableLimit = true;
+        jdef.lowerAngle = lowerAngle;
+        jdef.upperAngle = upperAngle;
+        jdef.initialize(bodyA, bodyB, anchor);
+        return world_.createJoint(jdef);
     }
 
     private Joint createJoint(Body bodyA, Body bodyB, Vec2 anchor) {
@@ -248,11 +275,35 @@ public class Climber {
     }
 
     public Vec2 getRightHandPos() {
-        return rightHand_.m_xf.position;
+        return rightHand_.getPosition();
     }
 
     public void setRightHandPos(Vec2 pos) {
-        rightHand_.m_xf.position.set(pos);
+        rightHand_.getPosition().set(pos);
+    }
+
+    public Body getLeftFoot() {
+        return leftFoot_;
+    }
+
+    public Vec2 getLeftFootPos() {
+        return leftFoot_.getPosition();
+    }
+
+    public void setLeftFootPos(Vec2 pos) {
+        leftFoot_.getPosition().set(pos);
+    }
+
+    public Body getRightFoot() {
+        return rightFoot_;
+    }
+
+    public Vec2 getRightFootPos() {
+        return rightFoot_.getPosition();
+    }
+
+    public void setRightFootPos(Vec2 pos) {
+        rightFoot_.getPosition().set(pos);
     }
 
     /**
@@ -261,8 +312,17 @@ public class Climber {
     public Body getClosestGripper(Vec2 pos) {
         float lhd = pos.sub(leftHand_.getPosition()).lengthSquared();
         float rhd = pos.sub(rightHand_.getPosition()).lengthSquared();
+        float lfd = pos.sub(leftFoot_.getPosition()).lengthSquared();
+        float rfd = pos.sub(rightFoot_.getPosition()).lengthSquared();
 
-        Body closestHand = lhd < rhd ? leftHand_ : rightHand_;
-        return closestHand;
+        if (lhd <= rhd && lhd <= lfd && lhd <= rfd) {
+            return leftHand_;
+        } else if (rhd <= lhd && rhd <= lfd && rhd <= rfd) {
+            return rightHand_;
+        } else if (lfd <= lhd && lfd <= rhd && lfd <= rfd) {
+            return leftFoot_;
+        } else {
+            return rightFoot_;
+        }
     }
 }
